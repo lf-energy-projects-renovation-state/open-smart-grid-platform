@@ -128,7 +128,7 @@ SPDX-License-Identifier: Apache-2.0
     <jacoco.version>0.8.12</jacoco.version>
     <selenium.java.version>4.21.0</selenium.java.version>
     <SunriseSunsetCalculator.version>1.2</SunriseSunsetCalculator.version>
-    <ant.junit.version>1.10.14</ant.junit.version>
+    <ant.junit.version>1.10.15</ant.junit.version>
     <args4j.version>2.37</args4j.version>
     <cucumber.version>5.7.0</cucumber.version>
     <testcontainers.version>1.19.8</testcontainers.version>
