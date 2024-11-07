@@ -111,7 +111,7 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
     return AccessResultCode.SUCCESS;
   }
 
-  void clearStatusMaskForChannel(
+  private void clearStatusMaskForChannel(
       final DlmsConnectionManager conn, final int channel, final DlmsDevice device)
       throws IOException, ProtocolAdapterException {
 

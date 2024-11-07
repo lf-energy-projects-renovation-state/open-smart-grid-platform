@@ -7,7 +7,6 @@ Feature: SmartMetering Management - Clear M-Bus alarm status on all channels of 
   As a grid operator
   I want to be able to clear the M-Bus alarm status on all channels of a E meter
 
-
   Scenario Outline: Clear M-Bus alarm status on all channels of a E-meter for protocol <protocol> <version> and check result OK
     Given a dlms device
       | DeviceIdentification | <deviceIdentification> |
