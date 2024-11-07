@@ -5,6 +5,9 @@
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.alarm;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
@@ -15,6 +18,7 @@ import org.openmuc.jdlms.MethodResultCode;
 import org.openmuc.jdlms.ObisCode;
 import org.openmuc.jdlms.SetParameter;
 import org.openmuc.jdlms.datatypes.DataObject;
+import org.opensmartgridplatform.adapter.protocol.dlms.application.services.AdhocService;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.AbstractCommandExecutor;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.JdlmsObjectToStringUtil;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.ObjectConfigServiceHelper;
@@ -28,6 +32,8 @@ import org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.ActionRequestDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.ActionResponseDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.ClearMBusStatusOnAllChannelsRequestDto;
+import org.opensmartgridplatform.dto.valueobjects.smartmetering.MbusChannelShortEquipmentIdentifierDto;
+import org.opensmartgridplatform.dto.valueobjects.smartmetering.ScanMbusChannelsResponseDto;
 import org.opensmartgridplatform.shared.infra.jms.MessageMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,16 +43,17 @@ import org.springframework.stereotype.Component;
 public class ClearMBusStatusOnAllChannelsCommandExecutor
     extends AbstractCommandExecutor<ClearMBusStatusOnAllChannelsRequestDto, AccessResultCode> {
 
-  private static final int[] CHANNELS = {1, 2, 3, 4};
-
   final ObjectConfigServiceHelper config;
 
   @Autowired
   public ClearMBusStatusOnAllChannelsCommandExecutor(
-      final ObjectConfigServiceHelper objectConfigServiceHelper) {
+      final ObjectConfigServiceHelper objectConfigServiceHelper, final AdhocService adhocService) {
     super(ClearMBusStatusOnAllChannelsRequestDto.class);
     this.config = objectConfigServiceHelper;
+    this.adhocService = adhocService;
   }
+
+  private final AdhocService adhocService;
 
   @Override
   public ActionResponseDto asBundleResponse(final AccessResultCode executionResult)
@@ -75,17 +82,36 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
       throws ProtocolAdapterException {
 
     try {
-      for (final int channel : CHANNELS) {
-        this.clearStatusMaskForChannel(conn, channel, device);
+      final ScanMbusChannelsResponseDto scanMbusChannelsResponseDto =
+          this.adhocService.scanMbusChannels(conn, device, messageMetadata);
+
+      final List<String> exceptions = new ArrayList<>();
+
+      scanMbusChannelsResponseDto.getChannelShortIds().stream()
+          .filter(dto -> !"00000000".equals(dto.getShortId().getIdentificationNumber()))
+          .map(MbusChannelShortEquipmentIdentifierDto::getChannel)
+          .forEach(
+              channel -> {
+                try {
+                  this.clearStatusMaskForChannel(conn, channel, device);
+                } catch (final Exception e) {
+                  exceptions.add(e.getMessage());
+                }
+              });
+
+      if (!exceptions.isEmpty()) {
+        throw new ProtocolAdapterException(
+            exceptions.stream().map(Object::toString).collect(Collectors.joining(", ")));
       }
-    } catch (final IOException e) {
-      throw new ConnectionException(e);
+
+    } catch (final Exception e) {
+      throw new ConnectionException(e.getMessage());
     }
 
     return AccessResultCode.SUCCESS;
   }
 
-  private void clearStatusMaskForChannel(
+  void clearStatusMaskForChannel(
       final DlmsConnectionManager conn, final int channel, final DlmsDevice device)
       throws IOException, ProtocolAdapterException {
 
