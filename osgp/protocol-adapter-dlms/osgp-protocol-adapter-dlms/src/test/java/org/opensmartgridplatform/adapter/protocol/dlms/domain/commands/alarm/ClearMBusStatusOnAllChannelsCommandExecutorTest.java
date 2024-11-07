@@ -38,7 +38,6 @@ import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.Obj
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.DlmsDevice;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.Protocol;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.DlmsConnectionManager;
-import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ConnectionException;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
 import org.opensmartgridplatform.adapter.protocol.dlms.infra.messaging.DlmsMessageListener;
 import org.opensmartgridplatform.adapter.protocol.dlms.infra.messaging.LoggingDlmsMessageListener;
@@ -120,7 +119,7 @@ class ClearMBusStatusOnAllChannelsCommandExecutorTest {
     when(this.objectConfigServiceHelper.findDefaultAttributeAddress(any(), any(), any(), any()))
         .thenThrow(new ProtocolAdapterException("Object not found"));
 
-    assertThatExceptionOfType(ConnectionException.class)
+    assertThatExceptionOfType(ProtocolAdapterException.class)
         .isThrownBy(
             () ->
                 this.executor.execute(

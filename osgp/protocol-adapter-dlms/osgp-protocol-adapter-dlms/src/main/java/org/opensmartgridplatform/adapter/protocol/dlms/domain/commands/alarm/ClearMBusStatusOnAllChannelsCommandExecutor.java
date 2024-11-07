@@ -25,7 +25,6 @@ import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.Obj
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.DlmsDevice;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.Protocol;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.DlmsConnectionManager;
-import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ConnectionException;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
 import org.opensmartgridplatform.dlms.interfaceclass.method.MBusClientMethod;
 import org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType;
@@ -105,7 +104,7 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
       }
 
     } catch (final Exception e) {
-      throw new ConnectionException(e.getMessage());
+      throw new ProtocolAdapterException(e.getMessage());
     }
 
     return AccessResultCode.SUCCESS;
