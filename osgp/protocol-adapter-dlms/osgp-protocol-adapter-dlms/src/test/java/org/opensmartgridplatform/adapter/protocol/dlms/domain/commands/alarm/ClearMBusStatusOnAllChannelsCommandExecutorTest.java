@@ -100,31 +100,35 @@ class ClearMBusStatusOnAllChannelsCommandExecutorTest {
   }
 
   @Test
-  void testExecuteObjectNotFound() throws OsgpException {
-    final DlmsDevice dlmsDevice = new DlmsDevice();
-    dlmsDevice.setProtocol("SMR", "5.0.0");
-    final MbusShortEquipmentIdentifierDto mbusShortEquipmentIdentifierDto =
-        new MbusShortEquipmentIdentifierDto(
-            "identificationNumber", "manufacturerIdentification", (short) 1, (short) 1);
-    final List<MbusChannelShortEquipmentIdentifierDto> channelShortIds = new ArrayList<>();
+  void testExecuteObjectNotFoundMultipleChannels() throws OsgpException, IOException {
+    final int nrOfOccupiedChannels = 4;
+    final DlmsDevice dlmsDevice51 = new DlmsDevice("SMR 5.1 device");
+    dlmsDevice51.setProtocol("SMR", "5.1");
+    final Protocol protocol = Protocol.forDevice(dlmsDevice51);
 
-    final MbusChannelShortEquipmentIdentifierDto mbusChannelShortEquipmentIdentifierDto =
-        new MbusChannelShortEquipmentIdentifierDto((short) 1, mbusShortEquipmentIdentifierDto);
-    channelShortIds.add(mbusChannelShortEquipmentIdentifierDto);
+    this.setupMocksForChannels(dlmsDevice51, protocol, nrOfOccupiedChannels, STATUS_MASK, true);
 
-    when(this.adhocService.scanMbusChannels(
-            this.connectionManager, dlmsDevice, this.messageMetadata))
-        .thenReturn(new ScanMbusChannelsResponseDto(channelShortIds));
-
-    when(this.objectConfigServiceHelper.findDefaultAttributeAddress(any(), any(), any(), any()))
+    when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
+            dlmsDevice51, protocol, DlmsObjectType.READ_MBUS_STATUS, 1))
         .thenThrow(new ProtocolAdapterException("Object not found"));
+    when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
+            dlmsDevice51, protocol, DlmsObjectType.READ_MBUS_STATUS, 3))
+        .thenThrow(new ProtocolAdapterException("Object not found"));
+    when(this.dlmsConnection.set(this.setParameterArgumentCaptor.capture()))
+        .thenReturn(AccessResultCode.SUCCESS);
+    when(this.methodResult.getResultCode()).thenReturn(MethodResultCode.SUCCESS);
+    when(this.dlmsConnection.action(this.methodParameterArgumentCaptor.capture()))
+        .thenReturn(this.methodResult);
 
     assertThatExceptionOfType(ProtocolAdapterException.class)
         .isThrownBy(
             () ->
                 this.executor.execute(
-                    this.connectionManager, dlmsDevice, this.dto, this.messageMetadata))
+                    this.connectionManager, dlmsDevice51, this.dto, this.messageMetadata))
         .withMessageContaining("Object not found");
+
+    verify(this.objectConfigServiceHelper, times(8))
+        .findDefaultAttributeAddress(any(), any(), any(), any());
   }
 
   @Test
@@ -133,7 +137,7 @@ class ClearMBusStatusOnAllChannelsCommandExecutorTest {
     dlmsDevice51.setProtocol("SMR", "5.1");
     final Protocol protocol = Protocol.forDevice(dlmsDevice51);
 
-    this.setupMocksForChannels(dlmsDevice51, protocol, 4, 0L);
+    this.setupMocksForChannels(dlmsDevice51, protocol, 4, 0L, false);
 
     this.executor.execute(this.connectionManager, dlmsDevice51, this.dto, this.messageMetadata);
 
@@ -151,7 +155,7 @@ class ClearMBusStatusOnAllChannelsCommandExecutorTest {
     dlmsDevice51.setProtocol("SMR", "5.1");
     final Protocol protocol = Protocol.forDevice(dlmsDevice51);
 
-    this.setupMocksForChannels(dlmsDevice51, protocol, nrOfOccupiedChannels, STATUS_MASK);
+    this.setupMocksForChannels(dlmsDevice51, protocol, nrOfOccupiedChannels, STATUS_MASK, false);
 
     when(this.dlmsConnection.set(this.setParameterArgumentCaptor.capture()))
         .thenReturn(AccessResultCode.SUCCESS);
@@ -175,7 +179,8 @@ class ClearMBusStatusOnAllChannelsCommandExecutorTest {
       final DlmsDevice dlmsDevice,
       final Protocol protocol,
       final int nrOfChannels,
-      final long statusMask)
+      final long statusMask,
+      final boolean skipChannels)
       throws IOException, OsgpException {
     final MbusShortEquipmentIdentifierDto mbusShortEquipmentIdentifierDto =
         new MbusShortEquipmentIdentifierDto(
@@ -183,30 +188,31 @@ class ClearMBusStatusOnAllChannelsCommandExecutorTest {
     final List<MbusChannelShortEquipmentIdentifierDto> channelShortIds = new ArrayList<>();
 
     for (int channel = 1; channel <= nrOfChannels; channel++) {
-      when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
-              dlmsDevice, protocol, DlmsObjectType.READ_MBUS_STATUS, channel))
-          .thenReturn(
-              new AttributeAddress(
-                  InterfaceClass.EXTENDED_REGISTER.id(),
-                  OBIS_CODE_TEMPLATE_READ_STATUS.replaceAll("x", Integer.toString(channel)),
-                  ExtendedRegisterAttribute.VALUE.attributeId()));
+      if (!skipChannels || channel == 2 || channel == 4) {
+        when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
+                dlmsDevice, protocol, DlmsObjectType.READ_MBUS_STATUS, channel))
+            .thenReturn(
+                new AttributeAddress(
+                    InterfaceClass.EXTENDED_REGISTER.id(),
+                    OBIS_CODE_TEMPLATE_READ_STATUS.replaceAll("x", Integer.toString(channel)),
+                    ExtendedRegisterAttribute.VALUE.attributeId()));
 
-      when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
-              dlmsDevice, protocol, DlmsObjectType.CLEAR_MBUS_STATUS, channel))
-          .thenReturn(
-              new AttributeAddress(
-                  InterfaceClass.DATA.id(),
-                  OBIS_CODE_TEMPLATE_CLEAR_STATUS.replaceAll("x", Integer.toString(channel)),
-                  DataAttribute.VALUE.attributeId()));
+        when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
+                dlmsDevice, protocol, DlmsObjectType.CLEAR_MBUS_STATUS, channel))
+            .thenReturn(
+                new AttributeAddress(
+                    InterfaceClass.DATA.id(),
+                    OBIS_CODE_TEMPLATE_CLEAR_STATUS.replaceAll("x", Integer.toString(channel)),
+                    DataAttribute.VALUE.attributeId()));
 
-      when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
-              dlmsDevice, protocol, DlmsObjectType.MBUS_CLIENT_SETUP, channel))
-          .thenReturn(
-              new AttributeAddress(
-                  InterfaceClass.MBUS_CLIENT.id(),
-                  OBIS_CODE_TEMPLATE_MBUS_CLIENT_SETUP.replaceAll("x", Integer.toString(channel)),
-                  DataAttribute.VALUE.attributeId()));
-
+        when(this.objectConfigServiceHelper.findDefaultAttributeAddress(
+                dlmsDevice, protocol, DlmsObjectType.MBUS_CLIENT_SETUP, channel))
+            .thenReturn(
+                new AttributeAddress(
+                    InterfaceClass.MBUS_CLIENT.id(),
+                    OBIS_CODE_TEMPLATE_MBUS_CLIENT_SETUP.replaceAll("x", Integer.toString(channel)),
+                    DataAttribute.VALUE.attributeId()));
+      }
       final MbusChannelShortEquipmentIdentifierDto mbusChannelShortEquipmentIdentifierDto =
           new MbusChannelShortEquipmentIdentifierDto(
               (short) channel, mbusShortEquipmentIdentifierDto);

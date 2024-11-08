@@ -7,7 +7,6 @@ package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.alarm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
@@ -43,6 +42,7 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
     extends AbstractCommandExecutor<ClearMBusStatusOnAllChannelsRequestDto, AccessResultCode> {
 
   final ObjectConfigServiceHelper config;
+  private final AdhocService adhocService;
 
   @Autowired
   public ClearMBusStatusOnAllChannelsCommandExecutor(
@@ -51,8 +51,6 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
     this.config = objectConfigServiceHelper;
     this.adhocService = adhocService;
   }
-
-  private final AdhocService adhocService;
 
   @Override
   public ActionResponseDto asBundleResponse(final AccessResultCode executionResult)
@@ -87,7 +85,7 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
       final List<String> exceptions = new ArrayList<>();
 
       scanMbusChannelsResponseDto.getChannelShortIds().stream()
-          .filter(dto -> !"00000000".equals(dto.getShortId().getIdentificationNumber()))
+          .filter(this::isNotEmptyChannel)
           .map(MbusChannelShortEquipmentIdentifierDto::getChannel)
           .forEach(
               channel -> {
@@ -99,8 +97,7 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
               });
 
       if (!exceptions.isEmpty()) {
-        throw new ProtocolAdapterException(
-            exceptions.stream().map(Object::toString).collect(Collectors.joining(", ")));
+        throw new ProtocolAdapterException(String.join(", ", exceptions));
       }
 
     } catch (final Exception e) {
@@ -264,5 +261,9 @@ public class ClearMBusStatusOnAllChannelsCommandExecutor
 
     final Number maskValue = statusMask.getValue();
     return maskValue.longValue();
+  }
+
+  private boolean isNotEmptyChannel(final MbusChannelShortEquipmentIdentifierDto dto) {
+    return !"00000000".equals(dto.getShortId().getIdentificationNumber());
   }
 }
