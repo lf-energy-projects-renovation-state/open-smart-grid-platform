@@ -13,15 +13,21 @@ Feature: SmartMetering Management - Clear M-Bus alarm status on all channels of 
       | DeviceType           | SMART_METER_E     |
       | Protocol             | <protocol>        |
       | ProtocolVersion      | <version>         |
+    And device simulation of "<deviceIdentification>" with M-Bus client version <mbusversion> values for channel <ch>
+      | MbusPrimaryAddress             |            3 |
+      | MbusIdentificationNumber       |     12056731 |
+      | MbusManufacturerIdentification | LGB          |
+      | MbusVersion                    |           66 |
+      | MbusDeviceTypeIdentification   |            3 |
     When the clear M-Bus status on all channels request is received
       | DeviceIdentification | <deviceIdentification> |
     Then the clear M-Bus status on all channels response is "OK"
 
     Examples:
-      | deviceIdentification  | protocol | version |
-      | TEST1028000000001     | SMR      | 5.1     |
-      | TEST1029000000001     | SMR      | 5.2     |
-      | TEST1030000000001     | SMR      | 5.5     |
+      | deviceIdentification  | protocol | version | mbusversion | ch |
+      | TEST1028000000001     | SMR      | 5.1     |           0 | 2  |
+      | TEST1029000000001     | SMR      | 5.2     |           0 | 3  |
+      | TEST1030000000001     | SMR      | 5.5     |           0 | 4  |
 
   @SMHE-1695
   Scenario Outline: Clear M-Bus alarm status on all channels of a E-meter for protocol <protocol> <version> and check result NOT_OK
