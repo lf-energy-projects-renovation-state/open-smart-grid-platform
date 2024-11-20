@@ -6,6 +6,7 @@ package org.opensmartgridplatform.throttling;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -22,6 +23,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.opensmartgridplatform.throttling.model.NetworkSegment;
+import org.opensmartgridplatform.throttling.model.PermitRequest;
 import org.opensmartgridplatform.throttling.model.ThrottlingSettings;
 import org.opensmartgridplatform.throttling.services.PermitService;
 import org.opensmartgridplatform.throttling.services.RateLimitService;
@@ -30,6 +32,7 @@ import org.opensmartgridplatform.throttling.services.RateLimitService;
 class PermitsPerNetworkSegmentTest {
 
   private static final int MAX_WAIT_FOR_HIGH_PRIO = 1000;
+  private static final int MAX_PAUSE_FOR_HIGH_PRIO = 200;
 
   private static final int BASE_TRANSCEIVER_STATION_ID = 5;
   private static final int CELL_ID = 2;
@@ -37,6 +40,7 @@ class PermitsPerNetworkSegmentTest {
       new NetworkSegment((short) 1, BASE_TRANSCEIVER_STATION_ID, CELL_ID);
   private static final int CLIENT_ID = 1;
   private static final int REQUEST_ID = 1;
+  private static final PermitRequest PERMIT_REQUEST = new PermitRequest(CLIENT_ID, REQUEST_ID);
 
   private static final int DEFAULT_PRIORITY = 4;
   private static final int HIGH_PRIORITY = 5;
@@ -53,7 +57,8 @@ class PermitsPerNetworkSegmentTest {
             this.permitRepository,
             this.rateLimitService,
             waitForHighPrioEnabled,
-            MAX_WAIT_FOR_HIGH_PRIO);
+            MAX_WAIT_FOR_HIGH_PRIO,
+            MAX_PAUSE_FOR_HIGH_PRIO);
   }
 
   @Test
@@ -65,12 +70,12 @@ class PermitsPerNetworkSegmentTest {
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, DEFAULT_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, DEFAULT_PRIORITY, this.throttlingSettings(1));
 
     assertThat(result).isTrue();
 
-    verify(this.permitRepository, never())
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+    verify(this.permitRepository, times(1))
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -81,12 +86,12 @@ class PermitsPerNetworkSegmentTest {
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, DEFAULT_PRIORITY, this.throttlingSettings(0));
+            NETWORK_SEGMENT, PERMIT_REQUEST, DEFAULT_PRIORITY, this.throttlingSettings(0));
 
     assertThat(result).isFalse();
 
     verify(this.permitRepository, never())
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -98,12 +103,12 @@ class PermitsPerNetworkSegmentTest {
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, DEFAULT_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, DEFAULT_PRIORITY, this.throttlingSettings(1));
 
     assertThat(result).isFalse();
 
-    verify(this.permitRepository, never())
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+    verify(this.permitRepository, times(1))
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -114,18 +119,18 @@ class PermitsPerNetworkSegmentTest {
 
     final boolean resultForDefaultPriority =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, DEFAULT_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, DEFAULT_PRIORITY, this.throttlingSettings(1));
 
     assertThat(resultForDefaultPriority).isFalse();
 
     final boolean resultForHighPriority =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, HIGH_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, HIGH_PRIORITY, this.throttlingSettings(1));
 
     assertThat(resultForHighPriority).isFalse();
 
     verify(this.permitRepository, never())
-        .createPermit(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -137,30 +142,29 @@ class PermitsPerNetworkSegmentTest {
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, HIGH_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, HIGH_PRIORITY, this.throttlingSettings(1));
 
     assertThat(result).isTrue();
 
-    verify(this.permitRepository, never())
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+    verify(this.permitRepository, times(1))
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
   void testRequestPermitForHighPriority() {
     this.mockRateLimiter(true);
-    this.mockPermitCreation(false);
-    this.mockHighPriorityPermitCreation(1);
+    this.mockHighPriorityPermitCreation(2);
 
     this.createSubject(true);
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, HIGH_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, HIGH_PRIORITY, this.throttlingSettings(1));
 
     assertThat(result).isTrue();
 
-    verify(this.permitRepository, times(1))
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+    verify(this.permitRepository, times(2))
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -172,57 +176,38 @@ class PermitsPerNetworkSegmentTest {
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, HIGH_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, HIGH_PRIORITY, this.throttlingSettings(1));
 
     assertThat(result).isFalse();
 
-    verify(this.permitRepository, never())
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
-  }
-
-  @Test
-  void testRequestPermitForHighPriorityWithWait() {
-    this.mockRateLimiter(true);
-    this.mockPermitCreation(false);
-    this.mockHighPriorityPermitCreation(2);
-
-    this.createSubject(true);
-
-    final boolean result =
-        this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, HIGH_PRIORITY, this.throttlingSettings(1));
-
-    assertThat(result).isTrue();
-
-    verify(this.permitRepository, times(2))
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+    verify(this.permitRepository, times(1))
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
   void testRequestPermitForHighPriorityNotGranted() {
     this.mockRateLimiter(true);
-    this.mockPermitCreation(false);
     this.mockHighPriorityPermitCreation(Integer.MAX_VALUE);
 
     this.createSubject(true);
 
     final boolean result =
         this.permitsPerNetworkSegment.requestPermit(
-            NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID, HIGH_PRIORITY, this.throttlingSettings(1));
+            NETWORK_SEGMENT, PERMIT_REQUEST, HIGH_PRIORITY, this.throttlingSettings(1));
 
     assertThat(result).isFalse();
 
     verify(this.permitRepository, atLeast(1))
-        .createPermitWithHighPriority(any(NetworkSegment.class), anyInt(), anyInt(), anyInt());
+        .createPermit(any(NetworkSegment.class), any(PermitRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
   void testReleasePermit() {
     this.createSubject(true);
 
-    this.permitsPerNetworkSegment.releasePermit(NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID);
+    this.permitsPerNetworkSegment.releasePermit(NETWORK_SEGMENT, PERMIT_REQUEST);
 
-    verify(this.permitRepository, times(1)).removePermit(NETWORK_SEGMENT, CLIENT_ID, REQUEST_ID);
+    verify(this.permitRepository, times(1)).removePermit(NETWORK_SEGMENT, PERMIT_REQUEST);
   }
 
   private void mockRateLimiter(final boolean isAllowed) {
@@ -233,14 +218,14 @@ class PermitsPerNetworkSegmentTest {
 
   private void mockPermitCreation(final boolean isCreated) {
     when(this.permitRepository.createPermit(
-            eq(NETWORK_SEGMENT), eq(CLIENT_ID), eq(REQUEST_ID), anyInt()))
+            eq(NETWORK_SEGMENT), eq(PERMIT_REQUEST), anyInt(), anyBoolean()))
         .thenReturn(isCreated);
   }
 
   @SuppressWarnings("squid:S2925")
   private void mockHighPriorityPermitCreation(final int countWhenSuccessful) {
-    when(this.permitRepository.createPermitWithHighPriority(
-            eq(NETWORK_SEGMENT), eq(CLIENT_ID), eq(REQUEST_ID), anyInt()))
+    when(this.permitRepository.createPermit(
+            eq(NETWORK_SEGMENT), eq(PERMIT_REQUEST), anyInt(), anyBoolean()))
         .thenAnswer(
             new Answer<Boolean>() {
               private int count = 1;

@@ -13,6 +13,7 @@ import java.util.stream.StreamSupport;
 import org.opensmartgridplatform.throttling.model.NetworkSegment;
 import org.opensmartgridplatform.throttling.model.Permit;
 import org.opensmartgridplatform.throttling.model.PermitKey;
+import org.opensmartgridplatform.throttling.model.PermitRequest;
 import org.redisson.api.RKeys;
 import org.redisson.api.RLock;
 import org.redisson.api.RScoredSortedSet;
@@ -27,97 +28,109 @@ public class RedisPermitService implements PermitService {
 
   private static final Logger log = LoggerFactory.getLogger(RedisPermitService.class);
 
-  private static final int TRY_LOCK_TIME_MS = 100;
-  private static final int WAIT_TIME_MS = 1000;
-
   private final RedissonClient redisson;
-  private final Sleeper sleeper;
   private final Duration timeToLive;
+  private final int tryLockTimeMs;
+  private final int highPrioTimeToLive;
 
   public RedisPermitService(
       final RedissonClient redisson,
-      final Sleeper sleeper,
       @Value("#{T(java.time.Duration).parse('${cleanup.permits.time-to-live:PT1H}')}")
-          final Duration timeToLive) {
+          final Duration timeToLive,
+      @Value("${permit.lock.try.max.in.ms:100}") final int tryLockTimeMs,
+      @Value("${wait.for.high.prio.max.in.ms:10000}") final int highPrioTimeToLive) {
     this.redisson = redisson;
-    this.sleeper = sleeper;
     this.timeToLive = timeToLive;
+    this.tryLockTimeMs = tryLockTimeMs;
+    this.highPrioTimeToLive = highPrioTimeToLive;
   }
 
   @Override
   public boolean createPermit(
       final NetworkSegment networkSegment,
-      final int clientId,
-      final int requestId,
-      final int maxConcurrentRequests) {
+      final PermitRequest permitRequest,
+      final int maxConcurrentRequests,
+      final boolean highPrio) {
 
     boolean granted = false;
 
     final PermitKey permitKey = PermitKey.builder().networkSegment(networkSegment).build();
     this.removeExpiredPermits(permitKey);
+    this.removeExpiredRequestsFromLobby(permitKey);
 
     final RLock lock = this.redisson.getLock(permitKey.lockId());
 
     try {
-      lock.lock();
+      if (lock.tryLock(this.tryLockTimeMs, TimeUnit.MILLISECONDS)) {
+        try {
+          granted =
+              this.tryRegisterPermit(
+                  networkSegment, permitRequest, maxConcurrentRequests, highPrio, permitKey);
+        } finally {
+          lock.unlock();
+        }
+      }
+    } catch (final InterruptedException e) {
+      log.error("Interrupted request {} while waiting for lock", permitRequest.getRequestId());
+      Thread.currentThread().interrupt();
+    }
 
+    return granted;
+  }
+
+  private boolean tryRegisterPermit(
+      final NetworkSegment networkSegment,
+      final PermitRequest permitRequest,
+      final int maxConcurrentRequests,
+      final boolean highPrio,
+      final PermitKey permitKey) {
+    boolean granted = false;
+
+    final RScoredSortedSet<PermitRequest> lobby =
+        this.redisson.getScoredSortedSet(permitKey.lobby());
+
+    if (highPrio || lobby.isEmpty()) {
       final RScoredSortedSet<Permit> permits = this.redisson.getScoredSortedSet(permitKey.key());
       final int numberOfRegisteredPermits = permits.size();
 
       log.debug(
-          "Trying to register a permit for request[{}] with permit key {}. (max-concurrent-requests: {}, number-of-registered-permits: {})",
-          requestId,
-          permitKey.key(),
+          "Trying to register a permit for request[{}] (max-concurrent-requests: {}, number-of-registered-permits: {})",
+          permitRequest.getRequestId(),
           maxConcurrentRequests,
           numberOfRegisteredPermits);
 
-      if (maxConcurrentRequests < 0 || numberOfRegisteredPermits < maxConcurrentRequests) {
+      if (this.permitsAvailable(maxConcurrentRequests, numberOfRegisteredPermits)) {
         granted =
-            permits.add(
-                Instant.now().toEpochMilli(), new Permit(networkSegment, clientId, requestId));
+            permits.add(Instant.now().toEpochMilli(), new Permit(networkSegment, permitRequest));
       }
-    } finally {
-      lock.unlock();
+
+      if (highPrio) {
+        this.updateLobby(permitRequest, granted, lobby);
+      }
     }
 
     return granted;
   }
 
-  @SuppressWarnings("squid:S2222")
-  @Override
-  public boolean createPermitWithHighPriority(
-      final NetworkSegment networkSegment,
-      final int clientId,
-      final int requestId,
-      final int maxConcurrentRequests) {
+  private boolean permitsAvailable(
+      final int maxConcurrentRequests, final int numberOfRegisteredPermits) {
+    return maxConcurrentRequests < 0 || numberOfRegisteredPermits < maxConcurrentRequests;
+  }
 
-    final PermitKey permitKey = PermitKey.builder().networkSegment(networkSegment).build();
-    final RLock lock = this.redisson.getLock(permitKey.lockId());
-
-    boolean granted = false;
-
-    try {
-
-      if (lock.tryLock(TRY_LOCK_TIME_MS, TimeUnit.MILLISECONDS)) {
-        this.sleeper.sleep(WAIT_TIME_MS);
-        granted = this.createPermit(networkSegment, clientId, requestId, maxConcurrentRequests);
-      }
-    } catch (final InterruptedException e) {
-      log.error("Interrupted request {} while waiting for lock", requestId);
-      Thread.currentThread().interrupt();
-      return false;
-    } finally {
-      if (lock.isHeldByCurrentThread()) {
-        lock.unlock();
-      }
+  private void updateLobby(
+      final PermitRequest permitRequest,
+      final boolean granted,
+      final RScoredSortedSet<PermitRequest> lobby) {
+    if (granted) {
+      lobby.remove(permitRequest);
+    } else {
+      lobby.addIfAbsent(Instant.now().toEpochMilli(), permitRequest);
     }
-
-    return granted;
   }
 
   @Override
   public boolean removePermit(
-      final NetworkSegment networkSegment, final int clientId, final int requestId) {
+      final NetworkSegment networkSegment, final PermitRequest permitRequest) {
 
     final PermitKey permitKey = PermitKey.builder().networkSegment(networkSegment).build();
     final RScoredSortedSet<Permit> permits = this.redisson.getScoredSortedSet(permitKey.key());
@@ -125,23 +138,47 @@ public class RedisPermitService implements PermitService {
     final boolean released =
         permits.stream()
             .filter(Objects::nonNull)
-            .filter(p -> p.clientId() == clientId && p.requestId() == requestId)
+            .filter(p -> p.permitRequest() != null)
+            .filter(
+                p ->
+                    p.permitRequest().getClientId() == permitRequest.getClientId()
+                        && p.permitRequest().getRequestId() == permitRequest.getRequestId())
             .findFirst()
             .map(permits::remove)
             .orElse(false);
 
-    log.debug("Permit for request [{}] {} removed", requestId, released ? "is" : " is not");
+    log.debug(
+        "Permit for request [{}] {} removed",
+        permitRequest.getRequestId(),
+        released ? "is" : " is not");
 
     return released;
   }
 
   private void removeExpiredPermits(final PermitKey permitKey) {
     final RScoredSortedSet<Permit> permits = this.redisson.getScoredSortedSet(permitKey.key());
-    final Instant endTime = Instant.now().minusSeconds(this.timeToLive.getSeconds());
-    final int removed =
-        permits.removeRangeByScore(Double.NEGATIVE_INFINITY, true, endTime.toEpochMilli(), true);
-    if (log.isDebugEnabled() && removed > 0) {
-      log.debug("Removed {} expired permits", removed);
+
+    if (!permits.isEmpty()) {
+      final Instant endTime = Instant.now().minusSeconds(this.timeToLive.getSeconds());
+      final int removed =
+          permits.removeRangeByScore(Double.NEGATIVE_INFINITY, true, endTime.toEpochMilli(), true);
+      if (removed > 0) {
+        log.debug("Removed {} expired permits", removed);
+      }
+    }
+  }
+
+  private void removeExpiredRequestsFromLobby(final PermitKey permitKey) {
+    final RScoredSortedSet<PermitRequest> requests =
+        this.redisson.getScoredSortedSet(permitKey.lobby());
+
+    if (!requests.isEmpty()) {
+      final Instant endTime = Instant.now().minusMillis(this.highPrioTimeToLive);
+      final int removed =
+          requests.removeRangeByScore(Double.NEGATIVE_INFINITY, true, endTime.toEpochMilli(), true);
+      if (removed > 0) {
+        log.debug("Removed {} expired high priority requests", removed);
+      }
     }
   }
 
@@ -155,7 +192,11 @@ public class RedisPermitService implements PermitService {
         .map(this.redisson::getScoredSortedSet)
         .flatMap(RScoredSortedSet::stream)
         .map(p -> (Permit) p)
-        .filter(p -> p.clientId() == clientId && p.requestId() == requestId)
+        .filter(p -> p.permitRequest() != null)
+        .filter(
+            p ->
+                p.permitRequest().getClientId() == clientId
+                    && p.permitRequest().getRequestId() == requestId)
         .findFirst();
   }
 
@@ -169,7 +210,8 @@ public class RedisPermitService implements PermitService {
         .map(this.redisson::getScoredSortedSet)
         .flatMap(RScoredSortedSet::stream)
         .map(p -> (Permit) p)
-        .filter(p -> p.clientId() == clientId)
+        .filter(p -> p.permitRequest() != null)
+        .filter(p -> p.permitRequest().getClientId() == clientId)
         .count();
   }
 }
