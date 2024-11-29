@@ -174,6 +174,7 @@ public class ConfigureDefinableLoadProfileCommandExecutor
     return DataObject.newStructureData(
         DataObject.newUInteger16Data(clockAddress.getClassId()),
         DataObject.newOctetStringData(clockAddress.getInstanceId().bytes()),
-        DataObject.newInteger8Data((byte) clockAddress.getId()));
+        DataObject.newInteger8Data((byte) clockAddress.getId()),
+        DataObject.newUInteger16Data(0));
   }
 }

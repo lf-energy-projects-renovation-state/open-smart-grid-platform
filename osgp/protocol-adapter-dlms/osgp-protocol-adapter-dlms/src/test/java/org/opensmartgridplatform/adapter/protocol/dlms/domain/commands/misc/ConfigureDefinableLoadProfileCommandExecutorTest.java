@@ -147,7 +147,8 @@ class ConfigureDefinableLoadProfileCommandExecutorTest {
         DataObject.newStructureData(
             DataObject.newUInteger16Data(8),
             DataObject.newOctetStringData(new ObisCode(OBIS_CODE_CLOCK).bytes()),
-            DataObject.newInteger8Data((byte) 2));
+            DataObject.newInteger8Data((byte) 2),
+            DataObject.newUInteger16Data(0));
     final DataObject object1 =
         DataObject.newStructureData(
             DataObject.newUInteger16Data(1),
