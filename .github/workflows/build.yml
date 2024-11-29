@@ -35,7 +35,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -T1C -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=gxf -Dsonar.projectKey=OSGP_open-smart-grid-platform
       - name: Make staging folder
-        run: find . && mkdir staging && cp target/*.war staging
+        run: mkdir staging && cp *.war staging
       - uses: actions/upload-artifact@v4
         with:
           name: Package
