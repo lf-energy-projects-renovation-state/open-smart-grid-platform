@@ -33,11 +33,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify  -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=gxf -Dsonar.projectKey=OSGP_open-smart-grid-platform
-      - name: Make package folder
-        run: mkdir development && cp target/*.jar development
-      - name: Package artifacts
-        uses: actions/upload-artifact@v4
+        run: mvn -T1C -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=gxf -Dsonar.projectKey=OSGP_open-smart-grid-platform
+      - run: mkdir staging && cp target/*.jar staging
+      - uses: actions/upload-artifact@v4
         with:
           name: Package
-          path: development
+          path: staging
