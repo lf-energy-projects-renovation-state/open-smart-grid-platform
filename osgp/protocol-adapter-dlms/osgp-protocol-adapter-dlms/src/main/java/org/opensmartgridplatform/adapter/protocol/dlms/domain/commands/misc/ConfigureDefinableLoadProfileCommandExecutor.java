@@ -4,6 +4,10 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.misc;
 
+import static org.opensmartgridplatform.dlms.interfaceclass.attribute.ProfileGenericAttribute.CAPTURE_OBJECTS;
+import static org.opensmartgridplatform.dlms.interfaceclass.attribute.ProfileGenericAttribute.CAPTURE_PERIOD;
+import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.DEFINABLE_LOAD_PROFILE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,18 +15,19 @@ import java.util.List;
 import ma.glasnost.orika.MapperFacade;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
-import org.openmuc.jdlms.ObisCode;
 import org.openmuc.jdlms.SetParameter;
 import org.openmuc.jdlms.datatypes.DataObject;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.AbstractCommandExecutor;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.JdlmsObjectToStringUtil;
+import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.ObjectConfigServiceHelper;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.DlmsDevice;
+import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.Protocol;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.DlmsConnectionManager;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ConnectionException;
+import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.NotSupportedByProtocolException;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
-import org.opensmartgridplatform.dlms.interfaceclass.InterfaceClass;
 import org.opensmartgridplatform.dlms.interfaceclass.attribute.ClockAttribute;
-import org.opensmartgridplatform.dlms.interfaceclass.attribute.ProfileGenericAttribute;
+import org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.ActionResponseDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.CaptureObjectDefinitionDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.DefinableLoadProfileConfigurationDto;
@@ -34,41 +39,22 @@ import org.springframework.stereotype.Component;
 public class ConfigureDefinableLoadProfileCommandExecutor
     extends AbstractCommandExecutor<DefinableLoadProfileConfigurationDto, Void> {
 
-  private static final int CLASS_ID = InterfaceClass.PROFILE_GENERIC.id();
-  private static final ObisCode LOGICAL_NAME = new ObisCode("0.1.94.31.6.255");
+  private final MapperFacade configurationMapper;
+  private final ObjectConfigServiceHelper objectConfigServiceHelper;
 
-  private static final AttributeAddress ATTRIBUTE_CAPTURE_OBJECTS =
-      new AttributeAddress(
-          CLASS_ID, LOGICAL_NAME, ProfileGenericAttribute.CAPTURE_OBJECTS.attributeId());
-  private static final String ATTRIBUTE_NAME_CAPTURE_OBJECTS = "capture objects";
-
-  private static final AttributeAddress ATTRIBUTE_CAPTURE_PERIOD =
-      new AttributeAddress(
-          CLASS_ID, LOGICAL_NAME, ProfileGenericAttribute.CAPTURE_PERIOD.attributeId());
-  private static final String ATTRIBUTE_NAME_CAPTURE_PERIOD = "capture period";
-
-  private static final ObisCode LOGICAL_NAME_CLOCK = new ObisCode("0.0.1.0.0.255");
-  private static final int CLASS_ID_CLOCK = InterfaceClass.CLOCK.id();
-  private static final byte ATTRIBUTE_INDEX_CLOCK_TIME = (byte) ClockAttribute.TIME.attributeId();
-  private static final DataObject CLOCK_TIME_DEFINITION =
-      DataObject.newStructureData(
-          DataObject.newUInteger16Data(CLASS_ID_CLOCK),
-              DataObject.newOctetStringData(LOGICAL_NAME_CLOCK.bytes()),
-          DataObject.newInteger8Data(ATTRIBUTE_INDEX_CLOCK_TIME), DataObject.newUInteger16Data(0));
-
-  @Autowired private MapperFacade configurationMapper;
-
-  public ConfigureDefinableLoadProfileCommandExecutor() {
+  @Autowired
+  public ConfigureDefinableLoadProfileCommandExecutor(
+      final MapperFacade configurationMapper,
+      final ObjectConfigServiceHelper objectConfigServiceHelper) {
     super(DefinableLoadProfileConfigurationDto.class);
+    this.configurationMapper = configurationMapper;
+    this.objectConfigServiceHelper = objectConfigServiceHelper;
   }
 
   @Override
   public ActionResponseDto asBundleResponse(final Void executionResult)
       throws ProtocolAdapterException {
-    /*
-     * Always successful, otherwise a ProtocolAdapterException was thrown
-     * before.
-     */
+    // Always successful, otherwise a ProtocolAdapterException was thrown before.
     return new ActionResponseDto("Configure definable load profile was successful");
   }
 
@@ -81,65 +67,70 @@ public class ConfigureDefinableLoadProfileCommandExecutor
       throws ProtocolAdapterException {
 
     if (definableLoadProfileConfiguration.hasCaptureObjects()) {
-      this.writeCaptureObjects(conn, definableLoadProfileConfiguration.getCaptureObjects());
+      this.writeCaptureObjects(device, conn, definableLoadProfileConfiguration.getCaptureObjects());
     }
 
     if (definableLoadProfileConfiguration.hasCapturePeriod()) {
-      this.writeCapturePeriod(conn, definableLoadProfileConfiguration.getCapturePeriod());
+      this.writeCapturePeriod(device, conn, definableLoadProfileConfiguration.getCapturePeriod());
     }
 
     return null;
   }
 
   private void writeCaptureObjects(
-      final DlmsConnectionManager conn, final List<CaptureObjectDefinitionDto> captureObjects)
+      final DlmsDevice device,
+      final DlmsConnectionManager conn,
+      final List<CaptureObjectDefinitionDto> captureObjects)
       throws ProtocolAdapterException {
-
-    this.dlmsLogWrite(conn, ATTRIBUTE_CAPTURE_OBJECTS, ATTRIBUTE_NAME_CAPTURE_OBJECTS);
     this.writeAttribute(
         conn,
         new SetParameter(
-            ATTRIBUTE_CAPTURE_OBJECTS,
-            DataObject.newArrayData(this.mapCaptureObjects(captureObjects))),
-        ATTRIBUTE_NAME_CAPTURE_OBJECTS);
+            this.getAttributeAddress(device, DEFINABLE_LOAD_PROFILE, CAPTURE_OBJECTS.attributeId()),
+            this.mapCaptureObjects(captureObjects, device)),
+        "capture objects");
   }
 
-  private List<DataObject> mapCaptureObjects(
-      final List<CaptureObjectDefinitionDto> captureObjects) {
+  private DataObject mapCaptureObjects(
+      final List<CaptureObjectDefinitionDto> captureObjects, final DlmsDevice device)
+      throws NotSupportedByProtocolException {
     final List<DataObject> captureObjectsArray = new ArrayList<>();
-    /*
-     * Always make sure the capture object definition of the clock time is
-     * included as first capture object in the list, and that the clock time
-     * is not included anywhere else as part of the capture objects.
-     */
-    captureObjectsArray.add(CLOCK_TIME_DEFINITION);
+    // Always make sure the capture object definition of the clock time is included as first object
+    // in the list, and that it is included only once.
+    final AttributeAddress clockAddress =
+        this.getAttributeAddress(device, DlmsObjectType.CLOCK, ClockAttribute.TIME.attributeId());
+
+    captureObjectsArray.add(this.getClockDefinition(clockAddress));
     for (final CaptureObjectDefinitionDto captureObject : captureObjects) {
-      if (!this.isClockTimeDefinition(captureObject)) {
+      if (!this.isClockTimeDefinition(captureObject, clockAddress)) {
         captureObjectsArray.add(this.configurationMapper.map(captureObject, DataObject.class));
       }
     }
-    return captureObjectsArray;
+    return DataObject.newArrayData(captureObjectsArray);
   }
 
-  private boolean isClockTimeDefinition(final CaptureObjectDefinitionDto captureObject) {
-    return CLASS_ID_CLOCK == captureObject.getClassId()
-        && Arrays.equals(LOGICAL_NAME_CLOCK.bytes(), captureObject.getLogicalName().toByteArray())
-        && ATTRIBUTE_INDEX_CLOCK_TIME == captureObject.getAttributeIndex();
+  private boolean isClockTimeDefinition(
+      final CaptureObjectDefinitionDto captureObject, final AttributeAddress address) {
+    return address.getClassId() == captureObject.getClassId()
+        && Arrays.equals(
+            address.getInstanceId().bytes(), captureObject.getLogicalName().toByteArray())
+        && address.getId() == captureObject.getAttributeIndex();
   }
 
-  private void writeCapturePeriod(final DlmsConnectionManager conn, final long capturePeriod)
+  private void writeCapturePeriod(
+      final DlmsDevice device, final DlmsConnectionManager conn, final long capturePeriod)
       throws ProtocolAdapterException {
-
-    this.dlmsLogWrite(conn, ATTRIBUTE_CAPTURE_PERIOD, ATTRIBUTE_NAME_CAPTURE_PERIOD);
     this.writeAttribute(
         conn,
-        new SetParameter(ATTRIBUTE_CAPTURE_PERIOD, DataObject.newUInteger32Data(capturePeriod)),
-        ATTRIBUTE_NAME_CAPTURE_PERIOD);
+        new SetParameter(
+            this.getAttributeAddress(device, DEFINABLE_LOAD_PROFILE, CAPTURE_PERIOD.attributeId()),
+            DataObject.newUInteger32Data(capturePeriod)),
+        "capture period");
   }
 
   private void writeAttribute(
       final DlmsConnectionManager conn, final SetParameter parameter, final String attributeName)
       throws ProtocolAdapterException {
+    this.dlmsLogWrite(conn, parameter.getAttributeAddress(), attributeName);
     try {
       final AccessResultCode result = conn.getConnection().set(parameter);
       if (!result.equals(AccessResultCode.SUCCESS)) {
@@ -163,5 +154,27 @@ public class ConfigureDefinableLoadProfileCommandExecutor
                 + attributeName
                 + "': "
                 + JdlmsObjectToStringUtil.describeAttributes(attribute));
+  }
+
+  protected AttributeAddress getAttributeAddress(
+      final DlmsDevice device, final DlmsObjectType dlmsObjectType, final int attributeId)
+      throws NotSupportedByProtocolException {
+    final Protocol protocol = Protocol.forDevice(device);
+    return this.objectConfigServiceHelper
+        .findOptionalAttributeAddress(protocol, dlmsObjectType, null, attributeId)
+        .orElseThrow(
+            () ->
+                new NotSupportedByProtocolException(
+                    String.format(
+                        "No address found for %s in protocol %s %s",
+                        dlmsObjectType.name(), protocol.getName(), protocol.getVersion())));
+  }
+
+  private DataObject getClockDefinition(final AttributeAddress clockAddress) {
+    return DataObject.newStructureData(
+        DataObject.newUInteger16Data(clockAddress.getClassId()),
+        DataObject.newOctetStringData(clockAddress.getInstanceId().bytes()),
+        DataObject.newInteger8Data((byte) clockAddress.getId()),
+        DataObject.newUInteger16Data(0));
   }
 }
