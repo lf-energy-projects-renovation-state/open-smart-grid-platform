@@ -4,18 +4,21 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.misc;
 
+import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.POWER_FAILURE_EVENT_LOG;
+
 import java.io.IOException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.GetResult;
-import org.openmuc.jdlms.ObisCode;
 import org.openmuc.jdlms.datatypes.DataObject;
 import org.opensmartgridplatform.adapter.protocol.dlms.application.mapping.DataObjectToOutageListConverter;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.AbstractCommandExecutor;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.JdlmsObjectToStringUtil;
+import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.ObjectConfigServiceHelper;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.DlmsDevice;
+import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.Protocol;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.DlmsConnectionManager;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ConnectionException;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
@@ -32,16 +35,16 @@ import org.springframework.stereotype.Component;
 public class GetOutagesCommandExecutor
     extends AbstractCommandExecutor<GetOutagesRequestDto, List<OutageDto>> {
 
-  private static final int CLASS_ID = 7;
-  private static final int ATTRIBUTE_ID = 2;
-  private static final String OBIS_CODE = "1.0.99.97.0.255";
   private final DataObjectToOutageListConverter dataObjectToOutageListConverter;
+  private final ObjectConfigServiceHelper objectConfigServiceHelper;
 
   @Autowired
   public GetOutagesCommandExecutor(
-      final DataObjectToOutageListConverter dataObjectToOutageListConverter) {
+      final DataObjectToOutageListConverter dataObjectToOutageListConverter,
+      final ObjectConfigServiceHelper objectConfigServiceHelper) {
     super(GetOutagesRequestDto.class);
     this.dataObjectToOutageListConverter = dataObjectToOutageListConverter;
+    this.objectConfigServiceHelper = objectConfigServiceHelper;
   }
 
   @Override
@@ -59,7 +62,8 @@ public class GetOutagesCommandExecutor
       throws ProtocolAdapterException {
 
     final AttributeAddress eventLogBuffer =
-        new AttributeAddress(CLASS_ID, new ObisCode(OBIS_CODE), ATTRIBUTE_ID);
+        this.objectConfigServiceHelper.findDefaultAttributeAddress(
+            device, Protocol.forDevice(device), POWER_FAILURE_EVENT_LOG);
 
     conn.getDlmsMessageListener()
         .setDescription(

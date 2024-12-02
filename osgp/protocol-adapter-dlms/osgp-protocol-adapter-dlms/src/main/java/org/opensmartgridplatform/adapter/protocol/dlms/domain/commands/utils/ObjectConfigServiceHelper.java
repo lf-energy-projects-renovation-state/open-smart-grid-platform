@@ -199,6 +199,14 @@ public class ObjectConfigServiceHelper {
         dlmsDevice, protocol, dlmsObjectType, channel, DEFAULT_ATTRIBUTE_ID);
   }
 
+  public AttributeAddress findDefaultAttributeAddress(
+      final DlmsDevice dlmsDevice, final Protocol protocol, final DlmsObjectType dlmsObjectType)
+      throws ProtocolAdapterException {
+
+    return this.findAttributeAddress(
+        dlmsDevice, protocol, dlmsObjectType, null, DEFAULT_ATTRIBUTE_ID);
+  }
+
   /**
    * Find a required attribute from the ObjectConfigService based on the protocol and
    * protocolVersion and a DlmsObjectType name. When not found a ProtocolAdapterException is thrown.
