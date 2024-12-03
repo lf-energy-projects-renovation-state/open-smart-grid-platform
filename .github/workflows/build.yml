@@ -53,7 +53,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: osgp/open-smart-grid-platform/osgp-core
+          - image: ${{ github.repository }}/osgp-core
             context: ./osgp/platform/osgp-core/
     steps:
       - name: Checkout
