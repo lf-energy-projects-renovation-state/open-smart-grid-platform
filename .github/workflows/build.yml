@@ -54,7 +54,7 @@ jobs:
       matrix:
         include:
           - image: osgp/open-smart-grid-platform/osgp-core
-            dockerFile: ./osgp/platform/osgp-core/Dockerfile
+            context: ./osgp/platform/osgp-core/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,8 +79,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ${{ matrix.dockerFile }}
+          context: ${{ matrix.context }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
