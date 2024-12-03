@@ -1,0 +1,17 @@
+name: Test if statement
+on:
+  push:
+    branches:
+      - development
+    tags:
+      - '**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  docker:
+    name: Testing labels
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'release') || contains(github.ref, 'development') || github.event.label.name == 'build-containers'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
