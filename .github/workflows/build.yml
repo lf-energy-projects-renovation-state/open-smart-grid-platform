@@ -43,7 +43,7 @@ jobs:
   docker:
     name: Building docker images
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'release') || contains(github.ref, 'development') || github.event.label.name == 'build-containers'
+    if: contains(github.ref, 'release') || contains(github.ref, 'development') || contains(github.event.pull_request.labels.*.name, 'build_containers')
     needs: build
     permissions:
       contents: read
