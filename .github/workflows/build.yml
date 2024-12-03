@@ -64,6 +64,18 @@ jobs:
         include:
           - image: ghcr.io/osgp/osgp-core
             context: ./osgp/platform/osgp-core/
+          - image: ghcr.io/osgp/osgp-logging
+            context: ./osgp/platform/osgp-logging/
+          - image: ghcr.io/osgp/osgp-adapter-domain-admin
+            context: ./osgp/platform/osgp-adapter-domain-admin/
+          - image: ghcr.io/osgp/osgp-adapter-domain-core
+            context: ./osgp/platform/osgp-adapter-domain-core/
+          - image: ghcr.io/osgp/osgp-adapter-domain-publiclighting
+            context: ./osgp/platform/osgp-adapter-domain-publiclighting/
+          - image: ghcr.io/osgp/osgp-adapter-domain-smartmetering
+            context: ./osgp/platform/osgp-adapter-domain-smartmetering/
+          - image: ghcr.io/osgp/osgp-adapter-domain-tariffswitching
+            context: ./osgp/platform/osgp-adapter-domain-tariffswitching/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
