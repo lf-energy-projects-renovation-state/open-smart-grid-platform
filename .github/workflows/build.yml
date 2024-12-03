@@ -12,10 +12,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
-env:
-  REGISTRY: ghcr.io
-  REPOSITORY: osgp
-
 jobs:
   build:
     name: Build and analyze
@@ -66,7 +62,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/osgp-core
+          - image: ghcr.io/osgp/osgp-core
             context: ./osgp/platform/osgp-core/
     steps:
       - name: Checkout
@@ -78,7 +74,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract metadata (tags, labels) for Docker
