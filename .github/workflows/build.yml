@@ -83,6 +83,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: warFiles
+      - run: find ${{ matrix.context }}
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
