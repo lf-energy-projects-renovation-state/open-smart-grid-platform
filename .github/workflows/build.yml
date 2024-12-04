@@ -76,6 +76,30 @@ jobs:
             context: ./osgp/platform/osgp-adapter-domain-smartmetering/
           - image: ghcr.io/osgp/osgp-adapter-domain-tariffswitching
             context: ./osgp/platform/osgp-adapter-domain-tariffswitching/
+          - image: ghcr.io/osgp/osgp-adapter-ws-admin
+            context: ./osgp/platform/osgp-adapter-ws-admin/
+          - image: ghcr.io/osgp/osgp-adapter-ws-core
+            context: ./osgp/platform/osgp-adapter-ws-core/
+          - image: ghcr.io/osgp/osgp-adapter-ws-publiclighting
+            context: ./osgp/platform/osgp-adapter-ws-publiclighting/
+          - image: ghcr.io/osgp/osgp-adapter-ws-smartmetering
+            context: ./osgp/platform/osgp-adapter-ws-smartmetering/
+          - image: ghcr.io/osgp/osgp-adapter-ws-tariffswitching
+            context: ./osgp/platform/osgp-adapter-ws-tariffswitching/
+          - image: ghcr.io/osgp/osgp-protocol-adapter-iec60870
+            context: ./osgp/protocol-adapter-iec60870/osgp-protocol-adapter-iec60870
+          - image: ghcr.io/osgp/osgp-protocol-simulator-iec60870
+            context: ./osgp/protocol-adapter-iec60870/osgp-protocol-simulator-iec60870
+          - image: ghcr.io/osgp/osgp-protocol-adapter-iec61850
+            context: ./osgp/protocol-adapter-iec61850/osgp-protocol-adapter-iec61850
+          - image: ghcr.io/osgp/osgp-protocol-simulator-iec61850
+            context: ./osgp/protocol-adapter-iec61850/osgp-protocol-simulator-iec61850
+          - image: ghcr.io/osgp/osgp-protocol-adapter-oslp
+            context: ./osgp/protocol-adapter-oslp/osgp-protocol-adapter-oslp-elster
+          - image: ghcr.io/osgp/osgp-signing-server
+            context: ./osgp/protocol-adapter-oslp/signing-server
+          - image: ghcr.io/osgp/osgp-web-device-simulator
+            context: ./osgp/protocol-adapter-oslp/web-device-simulator
     steps:
       - name: Checkout
         uses: actions/checkout@v4

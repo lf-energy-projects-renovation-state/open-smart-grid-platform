@@ -93,7 +93,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- Protocol Adapter OSLP -->
     <module>osgp-core-db-api</module>
-    <module>osgp-adapter-protocol-oslp-elster</module>
+    <module>osgp-protocol-adapter-oslp-elster</module>
     <module>signing-server</module>
   </modules>
 </project>
