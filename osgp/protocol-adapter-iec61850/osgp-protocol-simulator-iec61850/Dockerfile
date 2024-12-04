@@ -5,7 +5,6 @@ RUN addgroup -S iec61850-simulator && adduser -S iec61850-simulator -G iec61850-
  && mkdir -p /data/osgp/ \
  && chown iec61850-simulator:iec61850-simulator /data/osgp/
 USER iec61850-simulator:iec61850-simulator
-COPY target/configuration/iec61850-server-models/FlexOVL_540_171101_2_out-unbuffered.icd /data/osgp/FlexOVL_540_171101_2_out-unbuffered.icd
 COPY target/*.war /app/
 ENTRYPOINT ["java", \
     "-cp", \
