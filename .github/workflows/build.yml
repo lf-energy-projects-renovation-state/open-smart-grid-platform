@@ -36,7 +36,7 @@ jobs:
       - name: Set maven options
         id: maven_options
         if: contains(github.ref, 'release') || contains(github.ref, 'development') || contains(github.event.pull_request.labels.*.name, 'build_containers')
-        run: echo 'maven_options="-DskipTestJarWithDependenciesAssembly=false"' >> $GITHUB_OUTPUT
+        run: echo 'maven_options=-DskipTestJarWithDependenciesAssembly=false' >> $GITHUB_OUTPUT
       - name: Build and analyse
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
