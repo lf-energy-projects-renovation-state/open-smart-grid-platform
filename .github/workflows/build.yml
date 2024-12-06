@@ -10,7 +10,7 @@ on:
     tags:
       - '**'
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 jobs:
   build:
