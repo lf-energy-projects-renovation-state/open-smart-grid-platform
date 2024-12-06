@@ -36,12 +36,12 @@ jobs:
       - name: Set maven options
         id: maven_options
         if: contains(github.ref, 'release') || contains(github.ref, 'development') || contains(github.event.pull_request.labels.*.name, 'build_containers')
-        run: echo "-DskipTestJarWithDependenciesAssembly=false" >> $GITHUB_OUTPUT
+        run: echo 'maven_options="-DskipTestJarWithDependenciesAssembly=false"' >> $GITHUB_OUTPUT
       - name: Build and analyse
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -T1C -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=gxf -Dsonar.projectKey=OSGP_open-smart-grid-platform ${{ steps.maven_options.outputs.* }}
+        run: mvn -T1C -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=gxf -Dsonar.projectKey=OSGP_open-smart-grid-platform ${{ steps.maven_options.outputs.maven_options }}
       - name: Staging war files
         run: mkdir staging && find . -name \*.war -not -path './staging/*' -exec cp -prv --parents '{}' 'staging/' ';'
         if: contains(github.ref, 'release') || contains(github.ref, 'development') || contains(github.event.pull_request.labels.*.name, 'build_containers')
