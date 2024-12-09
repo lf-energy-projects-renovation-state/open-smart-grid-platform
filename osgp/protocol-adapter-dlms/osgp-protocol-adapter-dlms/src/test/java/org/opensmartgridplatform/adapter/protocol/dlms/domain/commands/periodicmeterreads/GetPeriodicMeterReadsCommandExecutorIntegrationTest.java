@@ -49,8 +49,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
   private GetPeriodicMeterReadsCommandExecutor executor;
 
   private DlmsHelper dlmsHelper;
-  private AmrProfileStatusCodeHelper amrProfileStatusCodeHelper;
-  private ObjectConfigService objectConfigService;
 
   private DlmsConnectionManagerStub connectionManagerStub;
   private DlmsConnectionStub connectionStub;
@@ -167,7 +165,7 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
 
   private static final List<Integer> ALL_G_CHANNELS = List.of(1, 2, 3, 4);
 
-  private final int DLMS_ENUM_VALUE_WH = 30;
+  private static final int DLMS_ENUM_VALUE_WH = 30;
 
   @BeforeEach
   public void setUp() throws IOException, ObjectConfigException {
@@ -182,16 +180,13 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     this.initDates();
 
     this.dlmsHelper = new DlmsHelper();
-    this.amrProfileStatusCodeHelper = new AmrProfileStatusCodeHelper();
-    this.objectConfigService = new ObjectConfigService();
+    final AmrProfileStatusCodeHelper amrProfileStatusCodeHelper = new AmrProfileStatusCodeHelper();
+    final ObjectConfigService objectConfigService = new ObjectConfigService();
 
     this.executor =
         new GetPeriodicMeterReadsCommandExecutor(
-            this.dlmsHelper, this.amrProfileStatusCodeHelper, this.objectConfigService);
+            this.dlmsHelper, amrProfileStatusCodeHelper, objectConfigService);
 
-    this.executor =
-        new GetPeriodicMeterReadsCommandExecutor(
-            this.dlmsHelper, this.amrProfileStatusCodeHelper, this.objectConfigService);
     this.connectionStub = new DlmsConnectionStub();
     this.connectionManagerStub = new DlmsConnectionManagerStub(this.connectionStub);
 
@@ -395,72 +390,41 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     final List<AttributeAddress> attributeAddresses = new ArrayList<>();
 
     switch (type) {
-      case MONTHLY:
-      case DAILY:
+      case MONTHLY, DAILY:
         attributeAddresses.add(
             new AttributeAddress(
-                this.CLASS_ID_REGISTER,
-                this.OBIS_ACTIVE_ENERGY_IMPORT_RATE_1,
-                this.ATTR_ID_SCALER_UNIT,
-                null));
+                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_IMPORT_RATE_1, ATTR_ID_SCALER_UNIT, null));
         attributeAddresses.add(
             new AttributeAddress(
-                this.CLASS_ID_REGISTER,
-                this.OBIS_ACTIVE_ENERGY_IMPORT_RATE_2,
-                this.ATTR_ID_SCALER_UNIT,
-                null));
+                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_IMPORT_RATE_2, ATTR_ID_SCALER_UNIT, null));
         attributeAddresses.add(
             new AttributeAddress(
-                this.CLASS_ID_REGISTER,
-                this.OBIS_ACTIVE_ENERGY_EXPORT_RATE_1,
-                this.ATTR_ID_SCALER_UNIT,
-                null));
+                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_EXPORT_RATE_1, ATTR_ID_SCALER_UNIT, null));
         attributeAddresses.add(
             new AttributeAddress(
-                this.CLASS_ID_REGISTER,
-                this.OBIS_ACTIVE_ENERGY_EXPORT_RATE_2,
-                this.ATTR_ID_SCALER_UNIT,
-                null));
+                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_EXPORT_RATE_2, ATTR_ID_SCALER_UNIT, null));
         if (!selectedValuesSupported) {
           attributeAddresses.add(
               new AttributeAddress(
-                  this.CLASS_ID_EXTENDED_REGISTER,
-                  this.OBIS_MBUS_CHANNEL_1,
-                  this.ATTR_ID_SCALER_UNIT,
-                  null));
+                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_1, ATTR_ID_SCALER_UNIT, null));
           attributeAddresses.add(
               new AttributeAddress(
-                  this.CLASS_ID_EXTENDED_REGISTER,
-                  this.OBIS_MBUS_CHANNEL_2,
-                  this.ATTR_ID_SCALER_UNIT,
-                  null));
+                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_2, ATTR_ID_SCALER_UNIT, null));
           attributeAddresses.add(
               new AttributeAddress(
-                  this.CLASS_ID_EXTENDED_REGISTER,
-                  this.OBIS_MBUS_CHANNEL_3,
-                  this.ATTR_ID_SCALER_UNIT,
-                  null));
+                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_3, ATTR_ID_SCALER_UNIT, null));
           attributeAddresses.add(
               new AttributeAddress(
-                  this.CLASS_ID_EXTENDED_REGISTER,
-                  this.OBIS_MBUS_CHANNEL_4,
-                  this.ATTR_ID_SCALER_UNIT,
-                  null));
+                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_4, ATTR_ID_SCALER_UNIT, null));
         }
         break;
       case INTERVAL:
         attributeAddresses.add(
             new AttributeAddress(
-                this.CLASS_ID_REGISTER,
-                this.OBIS_ACTIVE_ENERGY_IMPORT,
-                this.ATTR_ID_SCALER_UNIT,
-                null));
+                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_IMPORT, ATTR_ID_SCALER_UNIT, null));
         attributeAddresses.add(
             new AttributeAddress(
-                this.CLASS_ID_REGISTER,
-                this.OBIS_ACTIVE_ENERGY_EXPORT,
-                this.ATTR_ID_SCALER_UNIT,
-                null));
+                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_EXPORT, ATTR_ID_SCALER_UNIT, null));
         break;
       default:
         throw new Exception("Unexpected period type " + type);
@@ -495,13 +459,13 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
 
     // PERIOD 2
 
-    final DataObject period2Clock;
+    final DataObject period2ClockOrNull;
     final DataObject period2CaptureTime;
     if (useNullData) {
-      period2Clock = DataObject.newNullData();
+      period2ClockOrNull = DataObject.newNullData();
       period2CaptureTime = DataObject.newNullData();
     } else {
-      period2Clock = this.period2Clock;
+      period2ClockOrNull = this.period2Clock;
       period2CaptureTime = DataObject.newDateTimeData(this.PERIOD_2_CAPTURE_TIME);
     }
 
@@ -510,7 +474,7 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
             type,
             protocol,
             selectedValuesSupported,
-            period2Clock,
+            period2ClockOrNull,
             this.PERIOD2_AMR_STATUS_VALUE,
             PERIOD_2_E_VALUE_1,
             PERIOD_2_E_VALUE_2,
@@ -586,7 +550,8 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     // Add G values and capture times
     if (!selectedValuesSupported && type != PeriodTypeDto.INTERVAL) {
       for (final int c : this.ALL_G_CHANNELS) {
-        items.add(this.createGValue(longValueG, c));
+        // Make each value different by adding channel number
+        items.add(DataObject.newUInteger32Data(longValueG + c));
         if (protocol != Protocol.DSMR_2_2) {
           items.add(captureTime);
         }
@@ -600,8 +565,7 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
       final List<AttributeAddress> attributeAddressesForScalerUnit) {
     final DataObject responseDataObject =
         DataObject.newStructureData(
-            DataObject.newInteger8Data((byte) 0),
-            DataObject.newEnumerateData(this.DLMS_ENUM_VALUE_WH));
+            DataObject.newInteger8Data((byte) 0), DataObject.newEnumerateData(DLMS_ENUM_VALUE_WH));
 
     for (final AttributeAddress attributeAddress : attributeAddressesForScalerUnit) {
       this.connectionStub.addReturnValue(attributeAddress, responseDataObject);
@@ -676,6 +640,17 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
       assertThat(period2.getActiveEnergyExport().getValue().longValue())
           .isEqualTo(this.PERIOD_2_E_VALUE_2);
     }
+  }
+
+  private SelectiveAccessDescription createSelectiveAccessDescription(
+      final DataObject from, final DataObject to) {
+
+    final DataObject selectedValues = DataObject.newArrayData(List.of());
+
+    final DataObject expectedAccessParam =
+        DataObject.newStructureData(Arrays.asList(this.CLOCK, from, to, selectedValues));
+
+    return new SelectiveAccessDescription(1, expectedAccessParam);
   }
 
   // DSMR4
@@ -755,7 +730,7 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
   private AttributeAddress createAttributeAddressDsmr4Interval(
       final DataObject from, final DataObject to) {
     final SelectiveAccessDescription expectedSelectiveAccess =
-        this.createSelectiveAccessDescriptionDsmr4Interval(from, to);
+        this.createSelectiveAccessDescription(from, to);
     return new AttributeAddress(
         this.CLASS_ID_PROFILE,
         this.OBIS_INTERVAL_DSMR4,
@@ -763,23 +738,12 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
         expectedSelectiveAccess);
   }
 
-  private SelectiveAccessDescription createSelectiveAccessDescriptionDsmr4Interval(
-      final DataObject from, final DataObject to) {
-
-    final DataObject selectedValues = DataObject.newArrayData(List.of());
-
-    final DataObject expectedAccessParam =
-        DataObject.newStructureData(Arrays.asList(this.CLOCK, from, to, selectedValues));
-
-    return new SelectiveAccessDescription(1, expectedAccessParam);
-  }
-
   // SMR5
 
   private AttributeAddress createAttributeAddressSmr5Daily(
       final DataObject from, final DataObject to) {
     final SelectiveAccessDescription expectedSelectiveAccess =
-        this.createSelectiveAccessDescriptionSmr5(from, to);
+        this.createSelectiveAccessDescription(from, to);
     return new AttributeAddress(
         this.CLASS_ID_PROFILE, this.OBIS_DAILY_SMR5, this.ATTR_ID_BUFFER, expectedSelectiveAccess);
   }
@@ -787,7 +751,7 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
   private AttributeAddress createAttributeAddressSmr5Monthly(
       final DataObject from, final DataObject to) {
     final SelectiveAccessDescription expectedSelectiveAccess =
-        this.createSelectiveAccessDescriptionSmr5(from, to);
+        this.createSelectiveAccessDescription(from, to);
     return new AttributeAddress(
         this.CLASS_ID_PROFILE,
         this.OBIS_MONTHLY_SMR5,
@@ -798,27 +762,11 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
   private AttributeAddress createAttributeAddressSmr5Interval(
       final DataObject from, final DataObject to) {
     final SelectiveAccessDescription expectedSelectiveAccess =
-        this.createSelectiveAccessDescriptionSmr5(from, to);
+        this.createSelectiveAccessDescription(from, to);
     return new AttributeAddress(
         this.CLASS_ID_PROFILE,
         this.OBIS_INTERVAL_SMR5,
         this.ATTR_ID_BUFFER,
         expectedSelectiveAccess);
-  }
-
-  private SelectiveAccessDescription createSelectiveAccessDescriptionSmr5(
-      final DataObject from, final DataObject to) {
-
-    final DataObject selectedValues = DataObject.newArrayData(List.of());
-
-    final DataObject expectedAccessParam =
-        DataObject.newStructureData(Arrays.asList(this.CLOCK, from, to, selectedValues));
-
-    return new SelectiveAccessDescription(1, expectedAccessParam);
-  }
-
-  private DataObject createGValue(final long value, final int channel) {
-    // Add channel to value to make each value different
-    return DataObject.newUInteger32Data(value + channel);
   }
 }
