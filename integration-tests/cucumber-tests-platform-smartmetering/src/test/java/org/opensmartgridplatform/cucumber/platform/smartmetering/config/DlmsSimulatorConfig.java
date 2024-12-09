@@ -14,8 +14,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DlmsSimulatorConfig extends AbstractConfig {
 
-  public DlmsSimulatorConfig() {}
-
   @Value("${dynamic.properties.base.url}")
   private String dynamicPropertiesBaseUrl;
 

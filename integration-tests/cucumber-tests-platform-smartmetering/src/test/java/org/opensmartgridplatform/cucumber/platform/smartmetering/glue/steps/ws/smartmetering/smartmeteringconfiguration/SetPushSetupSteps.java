@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.GetSpecificAttributeValueAsyncRequest;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.GetSpecificAttributeValueAsyncResponse;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.GetSpecificAttributeValueRequest;
@@ -30,13 +31,9 @@ import org.opensmartgridplatform.cucumber.platform.smartmetering.support.ws.smar
 import org.opensmartgridplatform.cucumber.platform.smartmetering.support.ws.smartmetering.adhoc.SmartMeteringAdHocResponseClient;
 import org.opensmartgridplatform.dlms.interfaceclass.attribute.PushSetupAttribute;
 import org.opensmartgridplatform.shared.exceptionhandling.WebServiceSecurityException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SetPushSetupSteps {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(SetPushSetupSteps.class);
 
   @Autowired
   private SmartMeteringAdHocRequestClient<
@@ -50,14 +47,13 @@ public class SetPushSetupSteps {
 
   static void storeInScenario(final Map<String, String> settings, final String correlationUid) {
     ScenarioContext.current().put(PlatformSmartmeteringKeys.KEY_CORRELATION_UID, correlationUid);
-    List.of(
+    Stream.of(
             HOSTNAME,
             PORT,
             PUSH_OBJECT_ATTRIBUTE_IDS,
             PUSH_OBJECT_CLASS_IDS,
             PUSH_OBJECT_DATA_INDEXES,
             PUSH_OBJECT_OBIS_CODES)
-        .stream()
         .forEach(key -> ScenarioContext.current().put(key, settings.get(key)));
   }
 
@@ -77,6 +73,9 @@ public class SetPushSetupSteps {
         break;
       case COMMUNICATION_WINDOW:
         this.checkCommunicationWindow(pushSetupType, specificAttributeValues);
+        break;
+      default:
+        // other checks are not implemented
         break;
     }
   }
@@ -120,37 +119,36 @@ public class SetPushSetupSteps {
     assertThat(pushObjectDataIndexes)
         .as("test request is expected to have 3 data indexes")
         .hasSize(3);
-    final String expected =
-        String.format(
-            "DataObject: Choice=ARRAY, ResultData isComplex, value=[java.util.LinkedList]: [\n"
-                + "\tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [\n"
-                + "\tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n"
-                + "\tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s\n"
-                + "\tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s\n"
-                + "\tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n]\n\n"
-                + "\tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [\n"
-                + "\tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n"
-                + "\tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s\n"
-                + "\tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s\n"
-                + "\tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n]\n\n"
-                + "\tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [\n"
-                + "\tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n"
-                + "\tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s\n"
-                + "\tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s\n"
-                + "\tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n]\n\n]\n",
-            pushObjectClassIds.get(0),
-            pushObjectObisCodes.get(0),
-            pushObjectAttributeIds.get(0),
-            pushObjectDataIndexes.get(0),
-            pushObjectClassIds.get(1),
-            pushObjectObisCodes.get(1),
-            pushObjectAttributeIds.get(1),
-            pushObjectDataIndexes.get(1),
-            pushObjectClassIds.get(2),
-            pushObjectObisCodes.get(2),
-            pushObjectAttributeIds.get(2),
-            pushObjectDataIndexes.get(2));
-    return expected;
+    return String.format(
+        """
+                DataObject: Choice=ARRAY, ResultData isComplex, value=[java.util.LinkedList]: [\n
+                \tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [\n
+                \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n
+                \tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s\n
+                \tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s\n
+                \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n]\n\n
+                \tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [\n
+                \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n
+                \tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s\n
+                \tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s\n
+                \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n]\n\n
+                \tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [\n
+                \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n
+                \tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s\n
+                \tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s\n
+                \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s\n]\n\n]\n""",
+        pushObjectClassIds.get(0),
+        pushObjectObisCodes.get(0),
+        pushObjectAttributeIds.get(0),
+        pushObjectDataIndexes.get(0),
+        pushObjectClassIds.get(1),
+        pushObjectObisCodes.get(1),
+        pushObjectAttributeIds.get(1),
+        pushObjectDataIndexes.get(1),
+        pushObjectClassIds.get(2),
+        pushObjectObisCodes.get(2),
+        pushObjectAttributeIds.get(2),
+        pushObjectDataIndexes.get(2));
   }
 
   private static String getStringFromScenario(final String key) {

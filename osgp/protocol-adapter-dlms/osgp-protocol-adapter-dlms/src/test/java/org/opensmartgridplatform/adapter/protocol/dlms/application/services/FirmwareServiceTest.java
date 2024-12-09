@@ -56,24 +56,24 @@ public class FirmwareServiceTest {
   @InjectMocks private FirmwareService firmwareService;
 
   private static MessageMetadata messageMetadata;
-  private static final String firmwareIdentification = "firmware-file-1";
-  private static final String imageIdentifier = "496d6167654964656e746966696572";
-  private static final String deviceIdentification = "device-1";
+  private static final String FIRMWARE_IDENTIFICATION = "firmware-file-1";
+  private static final String IMAGE_IDENTIFIER = "496d6167654964656e746966696572";
+  private static final String DEVICE_IDENTIFICATION = "device-1";
   private static UpdateFirmwareRequestDto updateFirmwareRequestDto;
-  private static final String validMD5firmwareDigest = "48b5773e8b37a602d38a521e98cfc6a1";
+  private static final String VALID_MD5_FIRMWARE_DIGEST = "48b5773e8b37a602d38a521e98cfc6a1";
 
   @BeforeAll
   public static void init() {
     messageMetadata = MessageMetadata.newBuilder().withCorrelationUid("123456").build();
     updateFirmwareRequestDto =
-        createUpdateFirmwareRequestDto(HashTypeDto.MD5, validMD5firmwareDigest);
+        createUpdateFirmwareRequestDto(HashTypeDto.MD5, VALID_MD5_FIRMWARE_DIGEST);
   }
 
   private static UpdateFirmwareRequestDto createUpdateFirmwareRequestDto(
       final HashTypeDto hashTypeDto, final String firmwareDigest) {
     return new UpdateFirmwareRequestDto(
-        deviceIdentification,
-        new UpdateFirmwareRequestDataDto(firmwareIdentification, hashTypeDto, firmwareDigest));
+        DEVICE_IDENTIFICATION,
+        new UpdateFirmwareRequestDataDto(FIRMWARE_IDENTIFICATION, hashTypeDto, firmwareDigest));
   }
 
   @Test
@@ -87,15 +87,15 @@ public class FirmwareServiceTest {
 
   @Test
   void updateFirmwareWhenAllInCache() throws OsgpException {
-    final byte[] firmwareFile = firmwareIdentification.getBytes();
-    final byte[] firmwareImageIdentifier = Hex.decode(imageIdentifier);
+    final byte[] firmwareFile = FIRMWARE_IDENTIFICATION.getBytes();
+    final byte[] firmwareImageIdentifier = Hex.decode(IMAGE_IDENTIFIER);
 
-    when(this.firmwareFileCachingRepository.isAvailable(firmwareIdentification)).thenReturn(true);
-    when(this.firmwareFileCachingRepository.retrieve(firmwareIdentification))
+    when(this.firmwareFileCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION)).thenReturn(true);
+    when(this.firmwareFileCachingRepository.retrieve(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareFile);
-    when(this.firmwareImageIdentifierCachingRepository.isAvailable(firmwareIdentification))
+    when(this.firmwareImageIdentifierCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION))
         .thenReturn(true);
-    when(this.firmwareImageIdentifierCachingRepository.retrieve(firmwareIdentification))
+    when(this.firmwareImageIdentifierCachingRepository.retrieve(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareImageIdentifier);
 
     this.firmwareService.updateFirmware(
@@ -118,17 +118,17 @@ public class FirmwareServiceTest {
 
   @Test
   void updateFirmwareWhenFirmwareFileNotInCache() throws OsgpException {
-    final byte[] firmwareFile = firmwareIdentification.getBytes();
-    final byte[] firmwareImageIdentifier = Hex.decode(imageIdentifier);
+    final byte[] firmwareFile = FIRMWARE_IDENTIFICATION.getBytes();
+    final byte[] firmwareImageIdentifier = Hex.decode(IMAGE_IDENTIFIER);
 
-    when(this.firmwareFileCachingRepository.isAvailable(firmwareIdentification)).thenReturn(false);
-    when(this.firmwareFileStoreService.readFirmwareFile(firmwareIdentification))
+    when(this.firmwareFileCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION)).thenReturn(false);
+    when(this.firmwareFileStoreService.readFirmwareFile(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareFile);
-    when(this.firmwareFileCachingRepository.retrieve(firmwareIdentification))
+    when(this.firmwareFileCachingRepository.retrieve(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareFile);
-    when(this.firmwareImageIdentifierCachingRepository.isAvailable(firmwareIdentification))
+    when(this.firmwareImageIdentifierCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION))
         .thenReturn(true);
-    when(this.firmwareImageIdentifierCachingRepository.retrieve(firmwareIdentification))
+    when(this.firmwareImageIdentifierCachingRepository.retrieve(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareImageIdentifier);
 
     this.firmwareService.updateFirmware(
@@ -137,8 +137,8 @@ public class FirmwareServiceTest {
         updateFirmwareRequestDto,
         messageMetadata);
 
-    verify(this.firmwareFileStoreService).readFirmwareFile(firmwareIdentification);
-    verify(this.firmwareFileCachingRepository).store(firmwareIdentification, firmwareFile);
+    verify(this.firmwareFileStoreService).readFirmwareFile(FIRMWARE_IDENTIFICATION);
+    verify(this.firmwareFileCachingRepository).store(FIRMWARE_IDENTIFICATION, firmwareFile);
     verify(this.firmwareImageIdentifierCachingRepository, never())
         .store(anyString(), any(byte[].class));
     verify(this.updateFirmwareCommandExecutor, times(1))
@@ -151,18 +151,18 @@ public class FirmwareServiceTest {
 
   @Test
   void updateFirmwareWhenImageIdentifierNotInCache() throws OsgpException {
-    final byte[] firmwareFile = firmwareIdentification.getBytes();
-    final byte[] firmwareImageIdentifier = Hex.decode(imageIdentifier);
+    final byte[] firmwareFile = FIRMWARE_IDENTIFICATION.getBytes();
+    final byte[] firmwareImageIdentifier = Hex.decode(IMAGE_IDENTIFIER);
 
-    when(this.firmwareFileCachingRepository.isAvailable(firmwareIdentification)).thenReturn(true);
-    when(this.firmwareFileCachingRepository.retrieve(firmwareIdentification))
+    when(this.firmwareFileCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION)).thenReturn(true);
+    when(this.firmwareFileCachingRepository.retrieve(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareFile);
 
-    when(this.firmwareImageIdentifierCachingRepository.isAvailable(firmwareIdentification))
+    when(this.firmwareImageIdentifierCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION))
         .thenReturn(false);
-    when(this.firmwareFileStoreService.readImageIdentifier(firmwareIdentification))
+    when(this.firmwareFileStoreService.readImageIdentifier(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareImageIdentifier);
-    when(this.firmwareImageIdentifierCachingRepository.retrieve(firmwareIdentification))
+    when(this.firmwareImageIdentifierCachingRepository.retrieve(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareImageIdentifier);
 
     this.firmwareService.updateFirmware(
@@ -171,10 +171,10 @@ public class FirmwareServiceTest {
         updateFirmwareRequestDto,
         messageMetadata);
 
-    verify(this.firmwareFileStoreService).readImageIdentifier(firmwareIdentification);
+    verify(this.firmwareFileStoreService).readImageIdentifier(FIRMWARE_IDENTIFICATION);
     verify(this.firmwareImageIdentifierCachingRepository)
-        .store(firmwareIdentification, firmwareImageIdentifier);
-    verify(this.firmwareFileStoreService, never()).readFirmwareFile(firmwareIdentification);
+        .store(FIRMWARE_IDENTIFICATION, firmwareImageIdentifier);
+    verify(this.firmwareFileStoreService, never()).readFirmwareFile(FIRMWARE_IDENTIFICATION);
     verify(this.firmwareFileCachingRepository, never()).store(anyString(), any(byte[].class));
     verify(this.updateFirmwareCommandExecutor, times(1))
         .execute(
@@ -187,14 +187,14 @@ public class FirmwareServiceTest {
   @Test
   void updateFirmwareWhenFirmwareFileNotInCacheAndNotValid() throws OsgpException {
 
-    final byte[] firmwareFile = firmwareIdentification.getBytes();
+    final byte[] firmwareFile = FIRMWARE_IDENTIFICATION.getBytes();
     final HashTypeDto sha256 = HashTypeDto.SHA256;
 
-    when(this.firmwareFileCachingRepository.isAvailable(firmwareIdentification)).thenReturn(false);
-    when(this.firmwareFileStoreService.readFirmwareFile(firmwareIdentification))
+    when(this.firmwareFileCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION)).thenReturn(false);
+    when(this.firmwareFileStoreService.readFirmwareFile(FIRMWARE_IDENTIFICATION))
         .thenReturn(firmwareFile);
 
-    updateFirmwareRequestDto = createUpdateFirmwareRequestDto(sha256, validMD5firmwareDigest);
+    updateFirmwareRequestDto = createUpdateFirmwareRequestDto(sha256, VALID_MD5_FIRMWARE_DIGEST);
     assertThatExceptionOfType(ProtocolAdapterException.class)
         .isThrownBy(
             () -> {
@@ -204,11 +204,12 @@ public class FirmwareServiceTest {
                   updateFirmwareRequestDto,
                   messageMetadata);
             })
-        .withMessageContainingAll(firmwareIdentification, sha256.getAlgorithmName());
+        .withMessageContainingAll(FIRMWARE_IDENTIFICATION, sha256.getAlgorithmName());
 
-    verify(this.firmwareFileStoreService).readFirmwareFile(firmwareIdentification);
-    verify(this.firmwareFileCachingRepository, never()).store(firmwareIdentification, firmwareFile);
-    verify(this.firmwareFileCachingRepository, never()).retrieve(firmwareIdentification);
+    verify(this.firmwareFileStoreService).readFirmwareFile(FIRMWARE_IDENTIFICATION);
+    verify(this.firmwareFileCachingRepository, never())
+        .store(FIRMWARE_IDENTIFICATION, firmwareFile);
+    verify(this.firmwareFileCachingRepository, never()).retrieve(FIRMWARE_IDENTIFICATION);
     verifyNoInteractions(this.firmwareImageIdentifierCachingRepository);
     verifyNoInteractions(this.updateFirmwareCommandExecutor);
   }
@@ -216,10 +217,10 @@ public class FirmwareServiceTest {
   @Test
   void updateFirmwareWhenFirmwareFileNotInCacheAndNotOnStore() throws OsgpException {
 
-    final byte[] firmwareFile = firmwareIdentification.getBytes();
+    final byte[] firmwareFile = FIRMWARE_IDENTIFICATION.getBytes();
 
-    when(this.firmwareFileCachingRepository.isAvailable(firmwareIdentification)).thenReturn(false);
-    when(this.firmwareFileStoreService.readFirmwareFile(firmwareIdentification)).thenReturn(null);
+    when(this.firmwareFileCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION)).thenReturn(false);
+    when(this.firmwareFileStoreService.readFirmwareFile(FIRMWARE_IDENTIFICATION)).thenReturn(null);
 
     assertThatExceptionOfType(ProtocolAdapterException.class)
         .isThrownBy(
@@ -230,11 +231,12 @@ public class FirmwareServiceTest {
                   updateFirmwareRequestDto,
                   messageMetadata);
             })
-        .withMessageContainingAll(firmwareIdentification);
+        .withMessageContainingAll(FIRMWARE_IDENTIFICATION);
 
-    verify(this.firmwareFileStoreService).readFirmwareFile(firmwareIdentification);
-    verify(this.firmwareFileCachingRepository, never()).store(firmwareIdentification, firmwareFile);
-    verify(this.firmwareFileCachingRepository, never()).retrieve(firmwareIdentification);
+    verify(this.firmwareFileStoreService).readFirmwareFile(FIRMWARE_IDENTIFICATION);
+    verify(this.firmwareFileCachingRepository, never())
+        .store(FIRMWARE_IDENTIFICATION, firmwareFile);
+    verify(this.firmwareFileCachingRepository, never()).retrieve(FIRMWARE_IDENTIFICATION);
     verifyNoInteractions(this.firmwareImageIdentifierCachingRepository);
     verifyNoInteractions(this.updateFirmwareCommandExecutor);
   }
@@ -242,11 +244,11 @@ public class FirmwareServiceTest {
   @Test
   void updateFirmwareWhenStoreThrowsException() throws OsgpException {
 
-    final byte[] firmwareFile = firmwareIdentification.getBytes();
+    final byte[] firmwareFile = FIRMWARE_IDENTIFICATION.getBytes();
     final String storeExceptionMessage = "firmware file store failed!";
 
-    when(this.firmwareFileCachingRepository.isAvailable(firmwareIdentification)).thenReturn(false);
-    when(this.firmwareFileStoreService.readFirmwareFile(firmwareIdentification))
+    when(this.firmwareFileCachingRepository.isAvailable(FIRMWARE_IDENTIFICATION)).thenReturn(false);
+    when(this.firmwareFileStoreService.readFirmwareFile(FIRMWARE_IDENTIFICATION))
         .thenThrow(new ProtocolAdapterException(storeExceptionMessage));
 
     assertThatExceptionOfType(ProtocolAdapterException.class)
@@ -260,8 +262,9 @@ public class FirmwareServiceTest {
             })
         .withMessage(storeExceptionMessage);
 
-    verify(this.firmwareFileCachingRepository, never()).store(firmwareIdentification, firmwareFile);
-    verify(this.firmwareFileCachingRepository, never()).retrieve(firmwareIdentification);
+    verify(this.firmwareFileCachingRepository, never())
+        .store(FIRMWARE_IDENTIFICATION, firmwareFile);
+    verify(this.firmwareFileCachingRepository, never()).retrieve(FIRMWARE_IDENTIFICATION);
     verifyNoInteractions(this.firmwareImageIdentifierCachingRepository);
     verifyNoInteractions(this.updateFirmwareCommandExecutor);
   }
