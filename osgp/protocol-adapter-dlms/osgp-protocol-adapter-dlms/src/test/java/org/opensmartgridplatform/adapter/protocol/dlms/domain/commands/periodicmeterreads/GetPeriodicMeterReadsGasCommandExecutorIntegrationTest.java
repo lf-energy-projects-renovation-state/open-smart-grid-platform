@@ -73,40 +73,40 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
   private DlmsConnectionManagerStub connectionManagerStub;
   private DlmsConnectionStub connectionStub;
 
-  private final ObisCode OBIS_DAILY_DSMR4 = new ObisCode("1.0.99.2.0.255");
-  private final ObisCode OBIS_MONTHLY_DSMR4 = new ObisCode("0.0.98.1.0.255");
-  private final String OBIS_INTERVAL_DSMR4 = "0.<c>.24.3.0.255";
+  private static final ObisCode OBIS_DAILY_DSMR4 = new ObisCode("1.0.99.2.0.255");
+  private static final ObisCode OBIS_MONTHLY_DSMR4 = new ObisCode("0.0.98.1.0.255");
+  private static final String OBIS_INTERVAL_DSMR4 = "0.<c>.24.3.0.255";
 
-  private final String OBIS_DAILY_SMR5 = "0.<c>.24.3.1.255";
-  private final String OBIS_INTERVAL_SMR5 = "0.<c>.24.3.0.255";
-  private final String OBIS_MONTHLY_SMR5 = "0.<c>.24.3.2.255";
+  private static final String OBIS_DAILY_SMR5 = "0.<c>.24.3.1.255";
+  private static final String OBIS_INTERVAL_SMR5 = "0.<c>.24.3.0.255";
+  private static final String OBIS_MONTHLY_SMR5 = "0.<c>.24.3.2.255";
 
-  private final ObisCode OBIS_CLOCK = new ObisCode("0.0.1.0.0.255");
-  private final ObisCode OBIS_STATUS = new ObisCode("0.0.96.10.2.255");
-  private final String OBIS_GAS_VALUE_DSMR4 = "0.<c>.24.2.1.255";
+  private static final ObisCode OBIS_CLOCK = new ObisCode("0.0.1.0.0.255");
+  private static final ObisCode OBIS_STATUS = new ObisCode("0.0.96.10.2.255");
+  private static final String OBIS_GAS_VALUE_DSMR4 = "0.<c>.24.2.1.255";
 
-  private final int CLASS_ID_CLOCK = 8;
-  private final int CLASS_ID_DATA = 1;
-  private final int CLASS_ID_EXTENDED_REGISTER = 4;
-  private final int CLASS_ID_PROFILE = 7;
+  private static final int CLASS_ID_CLOCK = 8;
+  private static final int CLASS_ID_DATA = 1;
+  private static final int CLASS_ID_EXTENDED_REGISTER = 4;
+  private static final int CLASS_ID_PROFILE = 7;
 
-  private final byte ATTR_ID_VALUE = 2;
-  private final byte ATTR_ID_BUFFER = 2;
-  private final byte ATTR_ID_CAPTURE_TIME = 5;
+  private static final byte ATTR_ID_VALUE = 2;
+  private static final byte ATTR_ID_BUFFER = 2;
+  private static final byte ATTR_ID_CAPTURE_TIME = 5;
 
-  private final DataObject CLOCK =
+  private static final DataObject CLOCK =
       DataObject.newStructureData(
           Arrays.asList(
-              DataObject.newUInteger16Data(this.CLASS_ID_CLOCK),
-                  DataObject.newOctetStringData(this.OBIS_CLOCK.bytes()),
-              DataObject.newInteger8Data(this.ATTR_ID_VALUE), DataObject.newUInteger16Data(0)));
+              DataObject.newUInteger16Data(CLASS_ID_CLOCK),
+                  DataObject.newOctetStringData(OBIS_CLOCK.bytes()),
+              DataObject.newInteger8Data(ATTR_ID_VALUE), DataObject.newUInteger16Data(0)));
 
-  private final DataObject STATUS =
+  private static final DataObject STATUS =
       DataObject.newStructureData(
           Arrays.asList(
-              DataObject.newUInteger16Data(this.CLASS_ID_DATA),
-                  DataObject.newOctetStringData(this.OBIS_STATUS.bytes()),
-              DataObject.newInteger8Data(this.ATTR_ID_VALUE), DataObject.newUInteger16Data(0)));
+              DataObject.newUInteger16Data(CLASS_ID_DATA),
+                  DataObject.newOctetStringData(OBIS_STATUS.bytes()),
+              DataObject.newInteger8Data(ATTR_ID_VALUE), DataObject.newUInteger16Data(0)));
 
   private Date TIME_FROM;
   private Date TIME_TO;
@@ -118,19 +118,19 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
   private Date PERIOD_2_CLOCK_VALUE_NULL_DATA_PERIOD_DAILY;
   private Date PERIOD_2_CLOCK_VALUE_NULL_DATA_PERIOD_MONTHLY;
 
-  private final CosemDateTime PERIOD_1_CAPTURE_TIME = new CosemDateTime(2018, 12, 31, 23, 50, 0, 0);
-  private final CosemDateTime PERIOD_2_CAPTURE_TIME = new CosemDateTime(2019, 1, 1, 0, 7, 0, 0);
+  private static final CosemDateTime PERIOD_1_CAPTURE_TIME =
+      new CosemDateTime(2018, 12, 31, 23, 50, 0, 0);
+  private static final CosemDateTime PERIOD_2_CAPTURE_TIME =
+      new CosemDateTime(2019, 1, 1, 0, 7, 0, 0);
 
-  private final long PERIOD_1_LONG_VALUE = 1000L;
-  private final long PERIOD_2_LONG_VALUE = 1500L;
+  private static final long PERIOD_1_LONG_VALUE = 1000L;
+  private static final long PERIOD_2_LONG_VALUE = 1500L;
 
-  private final BigDecimal SCALER = BigDecimal.valueOf(1000);
+  private static final long PERIOD_1_LONG_VALUE_E = 33L;
+  private static final long PERIOD_2_LONG_VALUE_E = 44L;
 
-  private final long PERIOD_1_LONG_VALUE_E = 33L;
-  private final long PERIOD_2_LONG_VALUE_E = 44L;
-
-  private final short PERIOD1_AMR_STATUS_VALUE = 0x0F; // First 4 status bits set
-  private final short PERIOD2_AMR_STATUS_VALUE = 0xF0; // Last 4 status bits set
+  private static final short PERIOD1_AMR_STATUS_VALUE = 0x0F; // First 4 status bits set
+  private static final short PERIOD2_AMR_STATUS_VALUE = 0xF0; // Last 4 status bits set
 
   private final List<Protocol> protocolsNoStatusMonthlyValues =
       List.of(Protocol.DSMR_2_2, Protocol.DSMR_4_2_2, Protocol.SMR_4_3);
