@@ -392,6 +392,7 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
     final String capturePeriodValue = capturePeriodAttribute.getValue();
 
     return switch (capturePeriodValue) {
+      case "900" -> ProfileCaptureTime.QUARTER_HOUR;
       case "3600" -> ProfileCaptureTime.HOUR;
       case "86400" -> ProfileCaptureTime.DAY;
       case "0" -> ProfileCaptureTime.MONTH;

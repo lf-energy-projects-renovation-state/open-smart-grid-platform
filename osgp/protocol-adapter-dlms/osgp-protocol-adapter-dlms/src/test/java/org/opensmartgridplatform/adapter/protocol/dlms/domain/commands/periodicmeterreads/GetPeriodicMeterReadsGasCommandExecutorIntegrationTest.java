@@ -41,7 +41,6 @@ import org.openmuc.jdlms.ObisCode;
 import org.openmuc.jdlms.SelectiveAccessDescription;
 import org.openmuc.jdlms.datatypes.CosemDateTime;
 import org.openmuc.jdlms.datatypes.DataObject;
-import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.DlmsObjectConfigConfiguration;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.stub.DlmsConnectionManagerStub;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.stub.DlmsConnectionStub;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.AttributeAddressAssert;
@@ -123,6 +122,8 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
   private static final CosemDateTime PERIOD_2_CAPTURE_TIME =
       new CosemDateTime(2019, 1, 1, 0, 7, 0, 0);
 
+  private static final int AMOUNT_OF_PERIODS = 2;
+
   private static final long PERIOD_1_LONG_VALUE = 1000L;
   private static final long PERIOD_2_LONG_VALUE = 1500L;
 
@@ -156,8 +157,6 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
 
     this.dlmsHelper = new DlmsHelper();
     this.amrProfileStatusCodeHelper = new AmrProfileStatusCodeHelper();
-    final DlmsObjectConfigConfiguration dlmsObjectConfigConfiguration =
-        new DlmsObjectConfigConfiguration();
     this.objectConfigService = new ObjectConfigService();
 
     this.executor =
@@ -174,7 +173,6 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
   }
 
   private void initDates() {
-
     this.TIME_FROM = new GregorianCalendar(2019, Calendar.JANUARY, 1).getTime();
     this.TIME_TO = new GregorianCalendar(2019, Calendar.FEBRUARY, 5).getTime();
     this.PERIOD_1_CLOCK = this.getDateAsOctetString(2019, 1, 1);
@@ -321,7 +319,6 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
     assertThat(response.getPeriodType()).isEqualTo(type);
     final List<PeriodicMeterReadsGasResponseItemDto> periodicMeterReads =
         response.getPeriodicMeterReadsGas();
-    final int AMOUNT_OF_PERIODS = 2;
     assertThat(periodicMeterReads).hasSize(AMOUNT_OF_PERIODS);
 
     this.checkClockValues(periodicMeterReads, type, useNullData);
