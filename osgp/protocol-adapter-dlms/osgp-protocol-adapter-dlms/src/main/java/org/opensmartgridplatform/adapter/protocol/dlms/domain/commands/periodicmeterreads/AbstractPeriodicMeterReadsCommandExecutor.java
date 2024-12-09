@@ -177,11 +177,11 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
         .setDescription(
             String.format(
                 this.config.getFormatDescription(),
-                periodicMeterReadsQuery.getChannel(),
                 queryPeriodType,
                 from,
                 to,
-                JdlmsObjectToStringUtil.describeAttributes(profileBufferAddress)));
+                JdlmsObjectToStringUtil.describeAttributes(profileBufferAddress),
+                periodicMeterReadsQuery.getChannel()));
 
     // This is the actual request to the meter. The DlmsHelper will automatically check if the
     // result is SUCCESS. Otherwise, it will throw an exception.

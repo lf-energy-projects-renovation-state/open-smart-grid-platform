@@ -293,7 +293,7 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
     verify(this.dlmsMessageListener)
         .setDescription(
             String.format(
-                "GetPeriodicMeterReadsGas for channel ONE, DAILY from %s until %s, retrieve attribute: {%s,%s,%s}",
+                "GetPeriodicMeterReadsGas DAILY from %s until %s, retrieve attribute: {%s,%s,%s}, channel ONE",
                 convertedFromTime,
                 convertedToTime,
                 profile.getClassId(),
@@ -357,10 +357,10 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
   }
 
   private DlmsDevice createDevice(final Protocol protocol) {
-    final DlmsDevice device = new DlmsDevice();
-    device.setSelectiveAccessPeriodicMeterReadsSupported(true);
-    device.setProtocol(protocol);
-    return device;
+    final DlmsDevice dlmsDevice = new DlmsDevice();
+    dlmsDevice.setSelectiveAccessPeriodicMeterReadsSupported(true);
+    dlmsDevice.setProtocol(protocol);
+    return dlmsDevice;
   }
 
   private ProfileGeneric createProfile() {
@@ -406,8 +406,7 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
         List.of(attributeScalerUnit));
   }
 
-  // Compares date with cosemDateTime. Note: cosemDateTime uses hundredths and
-  // not milliseconds
+  // Compares date with cosemDateTime. Note: cosemDateTime uses hundredths and not milliseconds
   private boolean areDatesEqual(final Date date, final CosemDateTimeDto cosemDateTime) {
     final DateTime dateTime = new DateTime(date);
     final CosemDateDto cosemDate = cosemDateTime.getDate();

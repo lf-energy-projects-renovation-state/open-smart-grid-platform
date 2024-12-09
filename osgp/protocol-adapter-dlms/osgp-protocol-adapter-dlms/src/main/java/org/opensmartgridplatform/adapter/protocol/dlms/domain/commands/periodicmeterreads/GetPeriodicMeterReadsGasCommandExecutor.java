@@ -55,7 +55,7 @@ public class GetPeriodicMeterReadsGasCommandExecutor
   private static final String UNEXPECTED_VALUE =
       "Unexpected null/unspecified value for Gas Capture Time";
   private static final String FORMAT_DESCRIPTION =
-      "GetPeriodicMeterReadsGas for channel %s, %s from %s until %s, " + "retrieve attribute: %s";
+      "GetPeriodicMeterReadsGas %s from %s until %s, " + "retrieve attribute: %s, channel %s";
 
   private static final PeriodicMeterReadsConfig CONFIG =
       new PeriodicMeterReadsConfig(
@@ -151,9 +151,9 @@ public class GetPeriodicMeterReadsGasCommandExecutor
           logTime = this.readClock(periodType, previousLogTime, intervalTime, bufferedObject);
         }
         case AMR_PROFILE_STATUS,
-                AMR_PROFILE_STATUS_HOURLY_G,
-                AMR_PROFILE_STATUS_DAILY_G,
-                AMR_PROFILE_STATUS_MONTHLY_G ->
+            AMR_PROFILE_STATUS_HOURLY_G,
+            AMR_PROFILE_STATUS_DAILY_G,
+            AMR_PROFILE_STATUS_MONTHLY_G ->
             // The status is used in most profiles. But for some it is not used. In that case, the
             // selectedObjects will not contain a status object and readStatus will return null.
             status = this.readAmrProfileStatusCode(bufferedObject);

@@ -47,7 +47,7 @@ public class GetPeriodicMeterReadsCommandExecutor
     extends AbstractPeriodicMeterReadsCommandExecutor<
         PeriodicMeterReadsRequestDto, PeriodicMeterReadsResponseDto> {
 
-  private static final String ELECTRICITY_VALUE = "eletricityValue";
+  private static final String ELECTRICITY_VALUE = "electricityValue";
   private static final String PERIODIC_E_METER_READS = "Periodic E-Meter Reads";
   private static final String FORMAT_DESCRIPTION =
       "GetPeriodicMeterReads %s from %s until %s, retrieve attribute: " + "%s";
@@ -149,9 +149,9 @@ public class GetPeriodicMeterReadsCommandExecutor
           logTime = this.readClock(periodType, previousLogTime, intervalTime, bufferedObject);
         }
         case AMR_PROFILE_STATUS,
-                AMR_PROFILE_STATUS_15MIN_E,
-                AMR_PROFILE_STATUS_DAILY_E,
-                AMR_PROFILE_STATUS_MONTHLY_E ->
+            AMR_PROFILE_STATUS_15MIN_E,
+            AMR_PROFILE_STATUS_DAILY_E,
+            AMR_PROFILE_STATUS_MONTHLY_E ->
             // The status is used in most profiles. But for some it is not used. In that case, the
             // selectedObjects will not contain a status object and readStatus will return null.
             status = this.readAmrProfileStatusCode(bufferedObject);
