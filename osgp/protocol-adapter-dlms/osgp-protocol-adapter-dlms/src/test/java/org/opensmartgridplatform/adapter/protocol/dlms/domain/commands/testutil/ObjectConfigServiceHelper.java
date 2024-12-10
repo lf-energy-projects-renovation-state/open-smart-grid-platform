@@ -55,7 +55,7 @@ public class ObjectConfigServiceHelper {
     return new CosemObject(
         tag, "descr", classId, 0, obis, "", null, getMeterTypes(polyphase), properties, attributes);
   }
-  
+
   public static CosemObject createObject(
       final int classId,
       final String tag,
@@ -98,7 +98,7 @@ public class ObjectConfigServiceHelper {
         null,
         AccessType.RW);
   }
-  
+
   public static CosemObject createClock() {
     return createObject(8, "CLOCK", "0.0.1.0.0.255", "ABSTRACT", List.of());
   }
