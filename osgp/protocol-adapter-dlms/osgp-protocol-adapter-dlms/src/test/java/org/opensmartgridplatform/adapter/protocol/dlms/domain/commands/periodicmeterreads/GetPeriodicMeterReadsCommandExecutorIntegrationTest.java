@@ -516,9 +516,9 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     //
     // Clock          1 1 1          1 1 1          1 1 1
     // Status         1 1 0          1 1 0          1 1 1
-    // E values       0 0 0          0 0 0          0 0 0
-    // G values       1 1 1          1 1 1          1 1 1
-    // Capture time   0 0 0          1 1 1          1 1 1
+    // E values       2 4 4          2 4 4          2 4 4
+    // G values       0 0 0          0 0 0          0 0 0
+    // Capture time   0 0 0          0 0 0          0 0 0
 
     // Overview protocols - periodtypes - selected values NOT supported
     //
@@ -527,9 +527,9 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     //
     // Clock          1 1 1          1 1 1
     // Status         1 1 0          1 1 0
-    // E values       4 4 4          4 4 4
-    // G values       4 4 4          4 4 4
-    // Capture time   0 0 0          4 4 4
+    // E values       2 4 4          2 4 4
+    // G values       0 1 1          0 1 1
+    // Capture time   0 0 0          0 1 1
 
     // Always add clock first
     items.add(clock);

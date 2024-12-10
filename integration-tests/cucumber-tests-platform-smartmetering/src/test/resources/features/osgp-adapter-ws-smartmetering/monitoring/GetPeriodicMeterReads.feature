@@ -33,6 +33,21 @@ Feature: SmartMetering Monitoring - Get Periodic Meter Reads
       | INTERVAL   | 2015-09-01T00:00:00.000Z | 2015-10-01T00:00:00.000Z | TEST1027000000001    | SMR      | 5.0.0           |
       | MONTHLY    | 2016-01-01T00:00:00.000Z | 2016-09-01T00:00:00.000Z | TEST1027000000001    | SMR      | 5.0.0           |
       | DAILY      | 2022-05-02T00:00:00.000Z | 2022-05-02T00:00:00.000Z | TEST1027000000001    | SMR      | 5.0.0           |
+  @NightlyBuildOnly
+    Examples:
+      | PeriodType | BeginDate                | EndDate                  | DeviceId             | Protocol | ProtocolVersion |
+      | INTERVAL   | 2015-09-01T00:00:00.000Z | 2015-10-01T00:00:00.000Z | TEST1031000000001    | SMR      | 4.3             |
+      | MONTHLY    | 2016-01-01T00:00:00.000Z | 2016-09-01T00:00:00.000Z | TEST1031000000001    | SMR      | 4.3             |
+      | DAILY      | 2022-05-02T00:00:00.000Z | 2022-05-02T00:00:00.000Z | TEST1031000000001    | SMR      | 4.3             |
+      | INTERVAL   | 2015-09-01T00:00:00.000Z | 2015-10-01T00:00:00.000Z | TEST1028000000001    | SMR      | 5.1             |
+      | MONTHLY    | 2016-01-01T00:00:00.000Z | 2016-09-01T00:00:00.000Z | TEST1028000000001    | SMR      | 5.1             |
+      | DAILY      | 2022-05-02T00:00:00.000Z | 2022-05-02T00:00:00.000Z | TEST1028000000001    | SMR      | 5.1             |
+      | INTERVAL   | 2015-09-01T00:00:00.000Z | 2015-10-01T00:00:00.000Z | TEST1029000000001    | SMR      | 5.2             |
+      | MONTHLY    | 2016-01-01T00:00:00.000Z | 2016-09-01T00:00:00.000Z | TEST1029000000001    | SMR      | 5.2             |
+      | DAILY      | 2022-05-02T00:00:00.000Z | 2022-05-02T00:00:00.000Z | TEST1029000000001    | SMR      | 5.2             |
+      | INTERVAL   | 2015-09-01T00:00:00.000Z | 2015-10-01T00:00:00.000Z | TEST1030000000001    | SMR      | 5.5             |
+      | MONTHLY    | 2016-01-01T00:00:00.000Z | 2016-09-01T00:00:00.000Z | TEST1030000000001    | SMR      | 5.5             |
+      | DAILY      | 2022-05-02T00:00:00.000Z | 2022-05-02T00:00:00.000Z | TEST1030000000001    | SMR      | 5.5             |
 
   Scenario Outline: Get the periodic meter reads <PeriodType> from a <Protocol> <ProtocolVersion> <type>-meter
     Given a dlms device
