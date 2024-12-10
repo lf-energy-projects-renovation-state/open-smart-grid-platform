@@ -14,6 +14,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.DateTimeHelper.areDatesEqual;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.ObjectConfigServiceHelper.createClock;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.ObjectConfigServiceHelper.createObject;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.ACTIVE_ENERGY_EXPORT_RATE_1;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.ACTIVE_ENERGY_EXPORT_RATE_2;
 import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.ACTIVE_ENERGY_IMPORT_RATE_1;
@@ -65,9 +68,7 @@ import org.opensmartgridplatform.dlms.objectconfig.dlmsclasses.ProfileGeneric;
 import org.opensmartgridplatform.dlms.objectconfig.dlmsclasses.Register;
 import org.opensmartgridplatform.dlms.services.ObjectConfigService;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.ChannelDto;
-import org.opensmartgridplatform.dto.valueobjects.smartmetering.CosemDateDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.CosemDateTimeDto;
-import org.opensmartgridplatform.dto.valueobjects.smartmetering.CosemTimeDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.DlmsMeterValueDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.PeriodTypeDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.PeriodicMeterReadsRequestDataDto;
@@ -103,7 +104,6 @@ class GetPeriodicMeterReadsCommandExecutorTest {
   private static final int CLASS_ID_DATA = 1;
   private static final int CLASS_ID_REGISTER = 3;
   private static final int CLASS_ID_PROFILE_GENERIC = 7;
-  private static final int CLASS_ID_CLOCK = 8;
 
   private static final String SCALER_UNIT_DYNAMIC = "-2, WH";
   private static final String SCALER_UNIT_FIXED = "0, WH";
@@ -176,7 +176,7 @@ class GetPeriodicMeterReadsCommandExecutorTest {
 
     // SETUP - dlms objects
     final ProfileGeneric profile = this.createProfile();
-    final CosemObject clock = this.createClock();
+    final CosemObject clock = createClock();
     final CosemObject status = this.createStatus();
     final Register activeEnergyImportRate1 =
         this.createRegister(ACTIVE_ENERGY_IMPORT_RATE_1, "1.0.1.8.1.255", valueType);
@@ -382,7 +382,7 @@ class GetPeriodicMeterReadsCommandExecutorTest {
     // Only 2 meterreads are expected. The 3rd meterread has a logtime outside the requested period.
     Assertions.assertThat(periodicMeterReads).hasSize(2);
 
-    if (this.areDatesEqual(periodicMeterReads.get(0).getLogTime(), timeMeterRead1)) {
+    if (areDatesEqual(periodicMeterReads.get(0).getLogTime(), timeMeterRead1)) {
       this.checkValues(
           periodicMeterReads.get(0),
           timeMeterRead1,
@@ -424,7 +424,7 @@ class GetPeriodicMeterReadsCommandExecutorTest {
       final DlmsMeterValueDto import2,
       final DlmsMeterValueDto export1,
       final DlmsMeterValueDto export2) {
-    assertThat(this.areDatesEqual(response.getLogTime(), time)).isTrue();
+    assertThat(areDatesEqual(response.getLogTime(), time)).isTrue();
     assertThat(response.getActiveEnergyImportTariffOne()).isEqualTo(import1);
     assertThat(response.getActiveEnergyImportTariffTwo()).isEqualTo(import2);
     assertThat(response.getActiveEnergyExportTariffOne()).isEqualTo(export1);
@@ -457,13 +457,8 @@ class GetPeriodicMeterReadsCommandExecutorTest {
         List.of(attributeCaptureObjects, attributeCapturePeriod));
   }
 
-  private CosemObject createClock() {
-    return this.createCosemObject(
-        this.CLASS_ID_CLOCK, "CLOCK", "0.0.1.0.0.255", "ABSTRACT", List.of());
-  }
-
   private CosemObject createStatus() {
-    return this.createCosemObject(
+    return createObject(
         this.CLASS_ID_DATA, "AMR_PROFILE_STATUS", "0.0.96.10.2.255", "ABSTRACT", List.of());
   }
 
@@ -483,16 +478,6 @@ class GetPeriodicMeterReadsCommandExecutorTest {
         List.of(attributeScalerUnit));
   }
 
-  private CosemObject createCosemObject(
-      final int classId,
-      final String tag,
-      final String obis,
-      final String group,
-      final List<Attribute> attributes) {
-    return new CosemObject(
-        tag, "descr", classId, 0, obis, group, null, List.of(), Map.of(), attributes);
-  }
-
   private Attribute createAttribute(final int id, final String value) {
     return this.createAttribute(id, value, ValueType.FIXED_IN_PROFILE);
   }
@@ -500,20 +485,5 @@ class GetPeriodicMeterReadsCommandExecutorTest {
   private Attribute createAttribute(final int id, final String value, final ValueType valueType) {
     return new Attribute(
         id, "descr", null, DlmsDataType.DONT_CARE, valueType, value, null, AccessType.RW);
-  }
-
-  // Compares date with cosemDateTime. Note: cosemDateTime uses hundredths and not milliseconds
-  private boolean areDatesEqual(final Date date, final CosemDateTimeDto cosemDateTime) {
-    final DateTime dateTime = new DateTime(date);
-    final CosemDateDto cosemDate = cosemDateTime.getDate();
-    final CosemTimeDto cosemTime = cosemDateTime.getTime();
-
-    return (dateTime.getYear() == cosemDate.getYear()
-        && dateTime.getMonthOfYear() == cosemDate.getMonth()
-        && dateTime.getDayOfMonth() == cosemDate.getDayOfMonth()
-        && dateTime.getHourOfDay() == cosemTime.getHour()
-        && dateTime.getMinuteOfHour() == cosemTime.getMinute()
-        && dateTime.getSecondOfMinute() == cosemTime.getSecond()
-        && dateTime.getMillisOfSecond() == cosemTime.getHundredths() * 10);
   }
 }

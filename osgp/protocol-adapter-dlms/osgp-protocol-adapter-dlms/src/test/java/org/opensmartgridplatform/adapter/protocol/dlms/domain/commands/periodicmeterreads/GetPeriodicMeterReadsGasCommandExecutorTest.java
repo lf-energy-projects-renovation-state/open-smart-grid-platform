@@ -13,6 +13,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.DateTimeHelper.areDatesEqual;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.ObjectConfigServiceHelper.createClock;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.ObjectConfigServiceHelper.createObject;
 
 import java.util.Date;
 import java.util.List;
@@ -58,9 +61,7 @@ import org.opensmartgridplatform.dlms.objectconfig.dlmsclasses.ExtendedRegister;
 import org.opensmartgridplatform.dlms.objectconfig.dlmsclasses.ProfileGeneric;
 import org.opensmartgridplatform.dlms.services.ObjectConfigService;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.ChannelDto;
-import org.opensmartgridplatform.dto.valueobjects.smartmetering.CosemDateDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.CosemDateTimeDto;
-import org.opensmartgridplatform.dto.valueobjects.smartmetering.CosemTimeDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.DlmsMeterValueDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.PeriodTypeDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.PeriodicMeterReadGasResponseDto;
@@ -94,7 +95,6 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
   private static final int CLASS_ID_DATA = 1;
   private static final int CLASS_ID_EXTENDED_REGISTER = 4;
   private static final int CLASS_ID_PROFILE_GENERIC = 7;
-  private static final int CLASS_ID_CLOCK = 8;
 
   private static final String SCALER_UNIT_DYNAMIC = "-3, M3";
   private static final String SCALER_UNIT_FIXED = "0, M3";
@@ -174,14 +174,14 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
 
     // SETUP - dlms objects
     final ProfileGeneric profile = this.createProfile();
-    final CosemObject clock = this.createClock();
+    final CosemObject clock = createClock();
     final CosemObject status = this.createStatus();
-    final ExtendedRegister value_g = this.createMBusMasterValue(valueType);
+    final ExtendedRegister mBusMasterValue = this.createMBusMasterValue(valueType);
 
     final CaptureObject captureObjectClock = new CaptureObject(clock, 2);
     final CaptureObject captureObjectStatus = new CaptureObject(status, 2);
-    final CaptureObject captureObjectValue = new CaptureObject(value_g, 2);
-    final CaptureObject captureObjectScalerUnit = new CaptureObject(value_g, 5);
+    final CaptureObject captureObjectValue = new CaptureObject(mBusMasterValue, 2);
+    final CaptureObject captureObjectScalerUnit = new CaptureObject(mBusMasterValue, 5);
 
     // SETUP - mock dlms object config to return attribute addresses
     when(this.objectConfigService.getOptionalCosemObject(
@@ -193,7 +193,7 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
             "DSMR", "4.2.2", DlmsObjectType.AMR_PROFILE_STATUS))
         .thenReturn(status);
     when(this.objectConfigService.getCosemObject("DSMR", "4.2.2", DlmsObjectType.MBUS_MASTER_VALUE))
-        .thenReturn(value_g);
+        .thenReturn(mBusMasterValue);
     when(this.objectConfigService.getCaptureObjects(profile, "DSMR", "4.2.2", "DeviceModelCh1"))
         .thenReturn(
             List.of(
@@ -324,27 +324,17 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
                 .filter(r -> r.getConsumption() == meterValue1)
                 .allMatch(
                     r ->
-                        this.areDatesEqual(r.getLogTime(), timeMeterRead1)
-                            && this.areDatesEqual(r.getCaptureTime(), timeMeterRead1)))
+                        areDatesEqual(r.getLogTime(), timeMeterRead1)
+                            && areDatesEqual(r.getCaptureTime(), timeMeterRead1)))
         .isTrue();
     assertThat(
             periodicMeterReads.stream()
                 .filter(r -> r.getConsumption() == meterValue2)
                 .allMatch(
                     r ->
-                        this.areDatesEqual(r.getLogTime(), timeMeterRead2)
-                            && this.areDatesEqual(r.getCaptureTime(), timeMeterRead2)))
+                        areDatesEqual(r.getLogTime(), timeMeterRead2)
+                            && areDatesEqual(r.getCaptureTime(), timeMeterRead2)))
         .isTrue();
-  }
-
-  private CosemObject createCosemObject(
-      final int classId,
-      final String tag,
-      final String obis,
-      final String group,
-      final List<Attribute> attributes) {
-    return new CosemObject(
-        tag, "descr", classId, 0, obis, group, null, List.of(), Map.of(), attributes);
   }
 
   private Attribute createAttribute(final int id, final String value) {
@@ -381,13 +371,8 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
         List.of(attributeCaptureObjects, attributeCapturePeriod));
   }
 
-  private CosemObject createClock() {
-    return this.createCosemObject(
-        this.CLASS_ID_CLOCK, "CLOCK", "0.0.1.0.0.255", "ABSTRACT", List.of());
-  }
-
   private CosemObject createStatus() {
-    return this.createCosemObject(
+    return createObject(
         this.CLASS_ID_DATA, "AMR_PROFILE_STATUS", "0.x.1.2.3.255", "GAS", List.of());
   }
 
@@ -404,20 +389,5 @@ class GetPeriodicMeterReadsGasCommandExecutorTest {
         List.of(),
         Map.of(),
         List.of(attributeScalerUnit));
-  }
-
-  // Compares date with cosemDateTime. Note: cosemDateTime uses hundredths and not milliseconds
-  private boolean areDatesEqual(final Date date, final CosemDateTimeDto cosemDateTime) {
-    final DateTime dateTime = new DateTime(date);
-    final CosemDateDto cosemDate = cosemDateTime.getDate();
-    final CosemTimeDto cosemTime = cosemDateTime.getTime();
-
-    return (dateTime.getYear() == cosemDate.getYear()
-        && dateTime.getMonthOfYear() == cosemDate.getMonth()
-        && dateTime.getDayOfMonth() == cosemDate.getDayOfMonth()
-        && dateTime.getHourOfDay() == cosemTime.getHour()
-        && dateTime.getMinuteOfHour() == cosemTime.getMinute()
-        && dateTime.getSecondOfMinute() == cosemTime.getSecond()
-        && dateTime.getMillisOfSecond() == cosemTime.getHundredths() * 10);
   }
 }

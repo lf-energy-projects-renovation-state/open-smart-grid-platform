@@ -8,6 +8,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.util.Map.entry;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.DateTimeHelper.getDateAsOctetString;
 import static org.opensmartgridplatform.dto.valueobjects.smartmetering.AmrProfileStatusCodeFlagDto.CLOCK_ADJUSTED;
 import static org.opensmartgridplatform.dto.valueobjects.smartmetering.AmrProfileStatusCodeFlagDto.CLOCK_INVALID;
 import static org.opensmartgridplatform.dto.valueobjects.smartmetering.AmrProfileStatusCodeFlagDto.CRITICAL_ERROR;
@@ -174,8 +175,8 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
   private void initDates() {
     this.timeFrom = new GregorianCalendar(2019, Calendar.JANUARY, 1).getTime();
     this.timeTo = new GregorianCalendar(2019, Calendar.FEBRUARY, 5).getTime();
-    this.period1Clock = this.getDateAsOctetString(2019, 1, 1);
-    this.period2Clock = this.getDateAsOctetString(2019, 1, 2);
+    this.period1Clock = getDateAsOctetString(2019, 1, 1);
+    this.period2Clock = getDateAsOctetString(2019, 1, 2);
     this.period1ClockValue = new GregorianCalendar(2019, Calendar.JANUARY, 1, 0, 0).getTime();
     this.period2ClockValue = new GregorianCalendar(2019, Calendar.JANUARY, 2, 0, 0).getTime();
     this.period2ClockValueNullDataPeriodHourly =
@@ -498,12 +499,6 @@ class GetPeriodicMeterReadsGasCommandExecutorIntegrationTest {
     }
 
     return DataObject.newStructureData(items);
-  }
-
-  private DataObject getDateAsOctetString(final int year, final int month, final int day) {
-    final CosemDateTime dateTime = new CosemDateTime(year, month, day, 0, 0, 0, 0);
-
-    return DataObject.newOctetStringData(dateTime.encode());
   }
 
   private void checkClockValues(

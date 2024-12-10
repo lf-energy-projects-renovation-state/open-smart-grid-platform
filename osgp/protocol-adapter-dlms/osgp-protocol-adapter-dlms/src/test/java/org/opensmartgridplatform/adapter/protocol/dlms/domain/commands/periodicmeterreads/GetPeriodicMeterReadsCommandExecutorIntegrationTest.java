@@ -5,6 +5,7 @@
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.periodicmeterreads;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.testutil.DateTimeHelper.getDateAsOctetString;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,26 +64,18 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
 
   private static final ObisCode OBIS_CLOCK = new ObisCode("0.0.1.0.0.255");
   private static final ObisCode OBIS_STATUS = new ObisCode("0.0.96.10.2.255");
-  private static final ObisCode OBIS_ACTIVE_ENERGY_IMPORT = new ObisCode("1.0.1.8.0.255");
-  private static final ObisCode OBIS_ACTIVE_ENERGY_EXPORT = new ObisCode("1.0.2.8.0.255");
   private static final ObisCode OBIS_ACTIVE_ENERGY_IMPORT_RATE_1 = new ObisCode("1.0.1.8.1.255");
   private static final ObisCode OBIS_ACTIVE_ENERGY_IMPORT_RATE_2 = new ObisCode("1.0.1.8.2.255");
   private static final ObisCode OBIS_ACTIVE_ENERGY_EXPORT_RATE_1 = new ObisCode("1.0.2.8.1.255");
   private static final ObisCode OBIS_ACTIVE_ENERGY_EXPORT_RATE_2 = new ObisCode("1.0.2.8.2.255");
-  private static final ObisCode OBIS_MBUS_CHANNEL_1 = new ObisCode("0.1.24.2.1.255");
-  private static final ObisCode OBIS_MBUS_CHANNEL_2 = new ObisCode("0.2.24.2.1.255");
-  private static final ObisCode OBIS_MBUS_CHANNEL_3 = new ObisCode("0.3.24.2.1.255");
-  private static final ObisCode OBIS_MBUS_CHANNEL_4 = new ObisCode("0.4.24.2.1.255");
 
   private static final int CLASS_ID_CLOCK = 8;
   private static final int CLASS_ID_DATA = 1;
   private static final int CLASS_ID_REGISTER = 3;
-  private static final int CLASS_ID_EXTENDED_REGISTER = 4;
   private static final int CLASS_ID_PROFILE = 7;
 
   private static final byte ATTR_ID_VALUE = 2;
   private static final byte ATTR_ID_BUFFER = 2;
-  private static final byte ATTR_ID_SCALER_UNIT = 3;
 
   private static final DataObject CLOCK =
       DataObject.newStructureData(
@@ -165,8 +158,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
 
   private static final List<Integer> ALL_G_CHANNELS = List.of(1, 2, 3, 4);
 
-  private static final int DLMS_ENUM_VALUE_WH = 30;
-
   @BeforeEach
   public void setUp() throws IOException, ObjectConfigException {
 
@@ -200,8 +191,8 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
   private void initDates() {
     this.timeFrom = new GregorianCalendar(2019, Calendar.JANUARY, 1).getTime();
     this.timeTo = new GregorianCalendar(2019, Calendar.FEBRUARY, 2).getTime();
-    this.period1Clock = this.getDateAsOctetString(2019, 1, 1);
-    this.period2Clock = this.getDateAsOctetString(2019, 1, 2);
+    this.period1Clock = getDateAsOctetString(2019, 1, 1);
+    this.period2Clock = getDateAsOctetString(2019, 1, 2);
     this.period1ClockValue = new GregorianCalendar(2019, Calendar.JANUARY, 1, 0, 0).getTime();
     this.period2ClockValue = new GregorianCalendar(2019, Calendar.JANUARY, 2, 0, 0).getTime();
     this.period2ClockValueNullDataPeriod15Min =
@@ -291,8 +282,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     // Get expected values
     final AttributeAddress expectedAddressProfile =
         this.createAttributeAddress(protocol, type, this.timeFrom, this.timeTo, device);
-    final List<AttributeAddress> expectedScalerUnitAddresses =
-        this.getScalerUnitAttributeAddresses(type, selectiveAccessPeriodicMeterReadsSupported);
 
     // Set response in stub
     this.setResponseForProfile(
@@ -301,7 +290,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
         type,
         useNullData,
         selectiveAccessPeriodicMeterReadsSupported);
-    this.setResponsesForScalerUnit(expectedScalerUnitAddresses);
 
     // CALL
     final PeriodicMeterReadsResponseDto response =
@@ -383,53 +371,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
             + protocol.getName()
             + " and version "
             + protocol.getVersion());
-  }
-
-  private List<AttributeAddress> getScalerUnitAttributeAddresses(
-      final PeriodTypeDto type, final boolean selectedValuesSupported) throws Exception {
-    final List<AttributeAddress> attributeAddresses = new ArrayList<>();
-
-    switch (type) {
-      case MONTHLY, DAILY:
-        attributeAddresses.add(
-            new AttributeAddress(
-                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_IMPORT_RATE_1, ATTR_ID_SCALER_UNIT, null));
-        attributeAddresses.add(
-            new AttributeAddress(
-                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_IMPORT_RATE_2, ATTR_ID_SCALER_UNIT, null));
-        attributeAddresses.add(
-            new AttributeAddress(
-                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_EXPORT_RATE_1, ATTR_ID_SCALER_UNIT, null));
-        attributeAddresses.add(
-            new AttributeAddress(
-                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_EXPORT_RATE_2, ATTR_ID_SCALER_UNIT, null));
-        if (!selectedValuesSupported) {
-          attributeAddresses.add(
-              new AttributeAddress(
-                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_1, ATTR_ID_SCALER_UNIT, null));
-          attributeAddresses.add(
-              new AttributeAddress(
-                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_2, ATTR_ID_SCALER_UNIT, null));
-          attributeAddresses.add(
-              new AttributeAddress(
-                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_3, ATTR_ID_SCALER_UNIT, null));
-          attributeAddresses.add(
-              new AttributeAddress(
-                  CLASS_ID_EXTENDED_REGISTER, OBIS_MBUS_CHANNEL_4, ATTR_ID_SCALER_UNIT, null));
-        }
-        break;
-      case INTERVAL:
-        attributeAddresses.add(
-            new AttributeAddress(
-                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_IMPORT, ATTR_ID_SCALER_UNIT, null));
-        attributeAddresses.add(
-            new AttributeAddress(
-                CLASS_ID_REGISTER, OBIS_ACTIVE_ENERGY_EXPORT, ATTR_ID_SCALER_UNIT, null));
-        break;
-      default:
-        throw new Exception("Unexpected period type " + type);
-    }
-    return attributeAddresses;
   }
 
   private void setResponseForProfile(
@@ -559,23 +500,6 @@ class GetPeriodicMeterReadsCommandExecutorIntegrationTest {
     }
 
     return DataObject.newStructureData(items);
-  }
-
-  private void setResponsesForScalerUnit(
-      final List<AttributeAddress> attributeAddressesForScalerUnit) {
-    final DataObject responseDataObject =
-        DataObject.newStructureData(
-            DataObject.newInteger8Data((byte) 0), DataObject.newEnumerateData(DLMS_ENUM_VALUE_WH));
-
-    for (final AttributeAddress attributeAddress : attributeAddressesForScalerUnit) {
-      this.connectionStub.addReturnValue(attributeAddress, responseDataObject);
-    }
-  }
-
-  private DataObject getDateAsOctetString(final int year, final int month, final int day) {
-    final CosemDateTime dateTime = new CosemDateTime(year, month, day, 0, 0, 0, 0);
-
-    return DataObject.newOctetStringData(dateTime.encode());
   }
 
   private void checkClockValues(

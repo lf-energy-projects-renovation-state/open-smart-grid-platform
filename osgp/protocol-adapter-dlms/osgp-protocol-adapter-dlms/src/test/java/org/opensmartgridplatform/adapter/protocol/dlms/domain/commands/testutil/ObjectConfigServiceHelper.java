@@ -55,6 +55,16 @@ public class ObjectConfigServiceHelper {
     return new CosemObject(
         tag, "descr", classId, 0, obis, "", null, getMeterTypes(polyphase), properties, attributes);
   }
+  
+  public static CosemObject createObject(
+      final int classId,
+      final String tag,
+      final String obis,
+      final String group,
+      final List<Attribute> attributes) {
+    return new CosemObject(
+        tag, "descr", classId, 0, obis, group, null, List.of(), Map.of(), attributes);
+  }
 
   private static List<Attribute> createScalerUnitAttributeList(final String value) {
     return List.of(
@@ -87,5 +97,9 @@ public class ObjectConfigServiceHelper {
         value,
         null,
         AccessType.RW);
+  }
+  
+  public static CosemObject createClock() {
+    return createObject(8, "CLOCK", "0.0.1.0.0.255", "ABSTRACT", List.of());
   }
 }
