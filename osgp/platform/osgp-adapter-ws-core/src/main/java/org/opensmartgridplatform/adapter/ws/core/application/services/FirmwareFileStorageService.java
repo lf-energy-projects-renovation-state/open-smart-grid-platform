@@ -5,13 +5,13 @@
 package org.opensmartgridplatform.adapter.ws.core.application.services;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.opensmartgridplatform.shared.exceptionhandling.ComponentType;
 import org.opensmartgridplatform.shared.exceptionhandling.TechnicalException;
 import org.springframework.stereotype.Service;
@@ -112,7 +112,7 @@ public class FirmwareFileStorageService {
         final MessageDigest messageDigest = MessageDigest.getInstance(hashType);
         final byte[] firmwareFile = this.readFirmwareFile(firmwareIdentification);
 
-        digest = new BigInteger(1, messageDigest.digest(firmwareFile)).toString(16);
+        digest = Hex.encodeHexString(messageDigest.digest(firmwareFile));
       }
     } catch (final NoSuchAlgorithmException e) {
       throw new TechnicalException(

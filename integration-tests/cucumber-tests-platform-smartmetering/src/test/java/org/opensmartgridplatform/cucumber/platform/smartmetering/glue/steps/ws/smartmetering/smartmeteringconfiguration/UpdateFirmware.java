@@ -12,7 +12,6 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.junit.jupiter.api.Assertions;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.common.OsgpResultType;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.configuration.UpdateFirmwareAsyncRequest;
@@ -188,7 +188,7 @@ public class UpdateFirmware {
     try {
       final MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
       final byte[] digest = messageDigest.digest(filecontent);
-      return new BigInteger(1, digest).toString(16);
+      return Hex.encodeHexString(digest);
     } catch (final NoSuchAlgorithmException e) {
       log.error("Error calculating digest", e);
       return "";
