@@ -42,7 +42,7 @@ class FirmwareFileTest {
     final FirmwareFileHeader header = firmwareFile.getHeader();
     log.debug(header.toString());
     assertThat(header.getFirmwareImageMagicNumberHex())
-        .contains(FirmwareFile.VALID_FIRMWARE_IMAGE_MAGIC_NUMBERS);
+        .isIn(FirmwareFile.VALID_FIRMWARE_IMAGE_MAGIC_NUMBERS);
     assertThat(header.getHeaderVersionInt()).isZero();
     assertThat(header.getHeaderLengthInt()).isEqualTo(35);
     assertThat(header.getFirmwareImageVersionHex()).isEqualTo("11004000");
