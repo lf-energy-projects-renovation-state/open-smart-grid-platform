@@ -122,26 +122,26 @@ public class SetPushSetupSteps {
     return String.format(
         """
            DataObject: Choice=ARRAY, ResultData isComplex, value=[java.util.LinkedList]: [
-             DataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [
-               DataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
-               DataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s
-               DataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s
-               DataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
-             ]
+           \tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [
+           \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
+           \tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s
+           \tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s
+           \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
+           ]
 
-             DataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [
-               DataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
-               DataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s
-               DataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s
-               DataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
-             ]
+           \tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [
+           \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
+           \tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s
+           \tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s
+           \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
+           ]
 
-             DataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [
-               DataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
-               DataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s
-               DataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s
-               DataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
-             ]
+           \tDataObject: Choice=STRUCTURE, ResultData isComplex, value=[java.util.LinkedList]: [
+           \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
+           \tDataObject: Choice=OCTET_STRING, ResultData isByteArray, value=[[B]: logical name: %s
+           \tDataObject: Choice=INTEGER, ResultData isNumber, value=[java.lang.Byte]: %s
+           \tDataObject: Choice=LONG_UNSIGNED, ResultData isNumber, value=[java.lang.Integer]: %s
+           ]
 
            ]""",
         pushObjectClassIds.get(0),
