@@ -11,13 +11,13 @@ import static org.opensmartgridplatform.cucumber.core.ReadSettingsHelper.getHexD
 import static org.opensmartgridplatform.cucumber.core.ReadSettingsHelper.getString;
 import static org.opensmartgridplatform.cucumber.core.ReadSettingsHelper.getStringList;
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
+import org.apache.commons.codec.binary.Hex;
 import org.opensmartgridplatform.adapter.ws.schema.core.firmwaremanagement.ChangeableFirmware;
 import org.opensmartgridplatform.adapter.ws.schema.core.firmwaremanagement.DeviceModel;
 import org.opensmartgridplatform.adapter.ws.schema.core.firmwaremanagement.Firmware;
@@ -227,7 +227,7 @@ public class FirmwareSteps {
       throws NoSuchAlgorithmException {
     final MessageDigest messageDigest = MessageDigest.getInstance(hashType);
     final byte[] digest = messageDigest.digest(firmwareFile);
-    return new BigInteger(1, digest).toString(16);
+    return Hex.encodeHexString(digest);
   }
 
   protected void assertFirmwareFileHasModuleVersions(
