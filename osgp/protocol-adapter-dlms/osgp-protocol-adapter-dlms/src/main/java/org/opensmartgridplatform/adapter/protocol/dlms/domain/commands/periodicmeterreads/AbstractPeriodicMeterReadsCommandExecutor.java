@@ -97,9 +97,6 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
       final MessageMetadata messageMetadata)
       throws ProtocolAdapterException {
 
-    final CombinedDeviceModelCode combinedDeviceModelCode =
-        CombinedDeviceModelCode.parse(messageMetadata.getDeviceModelCode());
-
     if (periodicMeterReadsQuery == null) {
       throw new IllegalArgumentException(
           "PeriodicMeterReadsQuery should contain PeriodType, BeginDate and EndDate.");
@@ -141,6 +138,8 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
     // capture object definition in the profile.
     // All capture objects are retrieved from the config to get information about the scaler and
     // unit of the values. The scaler and unit might depend on the device model.
+    final CombinedDeviceModelCode combinedDeviceModelCode =
+        CombinedDeviceModelCode.parse(messageMetadata.getDeviceModelCode());
     final List<CaptureObject> allCaptureObjectsInProfile =
         this.getCaptureObjectsInProfile(
             profileObject, device, channel, this.getDeviceModel(combinedDeviceModelCode, channel));
@@ -201,16 +200,16 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
     final List<DataObject> bufferedObjectsList = resultData.getValue();
 
     // The values in the bufferedObjectList now need to be converted to a ResponseItem including
-    // information about the time, the type of value and the unit.
-
-    // A capture object might not have a fixed scaler unit in the config, or the scaler unit needs
-    // to be chosen based on the device type. So check if that is the case and update the capture
-    // objects if necessary. Note: this might result in an additional request to the meter.
+    // information about the time, the type of value and the unit. So we need to check if each
+    // capture object has a scaler and unit. If a capture object does not have a fixed scaler unit
+    // in the config, or the scaler unit needs to be chosen based on the device type, then update
+    // the capture objects if necessary.
+    // Note: this might result in an additional request to the meter.
     final List<CaptureObject> captureObjectsWithScalerUnit =
         this.checkAndGetScalerUnits(
             selectedCaptureObjects, conn, device, this.config.getMedium(), channel);
 
-    // The interval time of the profile is important. For efficiency, most meters only send a
+    // The interval time of the profile is also important. For efficiency, most meters only send a
     // timestamp for the first value in the response. The timestamp of the other values should be
     // calculated using the interval time.
     final ProfileCaptureTime intervalTime = this.getProfileCaptureTime(profileObject);
