@@ -442,7 +442,7 @@ class GetPeriodicMeterReadsCommandExecutorTest {
     final Attribute attributeCaptureObjects =
         this.createAttribute(
             3,
-            "CLOCK,2|AMR_PROFILE_STATUS,2|ACTIVE_ENERGY_IMPORT_RATE_1,2|ACTIVE_ENERGY_IMPORT_RATE_2,2|ACTIVE_ENERGY_EXPORT_RATE_1,2|ACTIVE_ENERGY_EXPORT_RATE_1,2|MBUS_MASTER_VALUE,2|MBUS_MASTER_VALUE,5");
+            "CLOCK,2|AMR_PROFILE_STATUS,2|ACTIVE_ENERGY_IMPORT_RATE_1,2|ACTIVE_ENERGY_IMPORT_RATE_2,2|ACTIVE_ENERGY_EXPORT_RATE_1,2|ACTIVE_ENERGY_EXPORT_RATE_2,2|MBUS_MASTER_VALUE,2|MBUS_MASTER_VALUE,5");
     final Attribute attributeCapturePeriod = this.createAttribute(4, "86400");
     return new ProfileGeneric(
         "DAILY_VALUES_E",

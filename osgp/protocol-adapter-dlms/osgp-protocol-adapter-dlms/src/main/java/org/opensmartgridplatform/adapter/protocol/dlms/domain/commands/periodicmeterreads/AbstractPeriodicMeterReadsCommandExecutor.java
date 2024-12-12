@@ -496,7 +496,7 @@ public abstract class AbstractPeriodicMeterReadsCommandExecutor<T, R>
     conn.getDlmsMessageListener()
         .setDescription(
             String.format(
-                "GetPeriodicMeterReadsGas scaler units, retrieve attribute: %s",
+                "Get scaler units for periodic meter reads, retrieve attribute: %s",
                 JdlmsObjectToStringUtil.describeAttributes(scalerUnitAddresses)));
 
     final List<GetResult> getResults =
