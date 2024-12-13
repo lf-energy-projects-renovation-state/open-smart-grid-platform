@@ -10,7 +10,7 @@ import com.jasperwireless.api.ws.service.ObjectFactory;
 import com.jasperwireless.api.ws.service.SendSMSRequest;
 import com.jasperwireless.api.ws.service.SendSMSResponse;
 import java.util.List;
-import org.apache.ws.security.WSConstants;
+import org.apache.wss4j.common.WSS4JConstants;
 import org.opensmartgridplatform.adapter.protocol.jasper.client.JasperWirelessSmsClient;
 import org.opensmartgridplatform.jasper.config.JasperWirelessAccess;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,13 +107,13 @@ public class JasperWirelessSmsSoapClient implements JasperWirelessSmsClient {
             getSMSDetailsRequest, new SoapActionCallback(SERVICE_GET_SMSDETAILS));
   }
 
-  // Sonar marks 'setSecurementPasswordType(WSConstants.PW_TEXT)' as exposing a password.
+  // Sonar marks 'setSecurementPasswordType(WSS4JConstants.PW_TEXT)' as exposing a password.
   // This is wrong, it just sets the password *type*
   @SuppressWarnings("java:S6437")
   private void setUsernameToken(
       final Wss4jSecurityInterceptor interceptor, final String user, final String pass) {
     interceptor.setSecurementUsername(user);
     interceptor.setSecurementPassword(pass);
-    interceptor.setSecurementPasswordType(WSConstants.PW_TEXT);
+    interceptor.setSecurementPasswordType(WSS4JConstants.PW_TEXT);
   }
 }

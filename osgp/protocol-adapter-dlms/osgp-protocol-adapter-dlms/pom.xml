@@ -214,12 +214,6 @@ SPDX-License-Identifier: Apache-2.0
       <artifactId>jakarta.inject-api</artifactId>
     </dependency>
 
-    <!-- Apache ws support -->
-    <dependency>
-      <groupId>org.apache.ws.security</groupId>
-      <artifactId>wss4j</artifactId>
-    </dependency>
-
     <!-- Joda Time (Date/Time util) -->
     <dependency>
       <groupId>joda-time</groupId>
