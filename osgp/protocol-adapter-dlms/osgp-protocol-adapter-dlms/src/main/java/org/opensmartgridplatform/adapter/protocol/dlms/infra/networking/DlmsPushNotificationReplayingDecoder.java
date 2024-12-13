@@ -10,24 +10,24 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import java.io.IOException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.opensmartgridplatform.dlms.DlmsPushNotification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Slf4j
+@Component
 public class DlmsPushNotificationReplayingDecoder
     extends ReplayingDecoder<DlmsPushNotificationReplayingDecoder.DecodingState> {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(DlmsPushNotificationReplayingDecoder.class);
-
-  private final DlmsPushNotificationDecoder decoder = new DlmsPushNotificationDecoder();
+  private final DlmsPushNotificationDecoder decoder;
 
   public enum DecodingState {
     EQUIPMENT_IDENTIFIER
   }
 
-  public DlmsPushNotificationReplayingDecoder() {
-    LOGGER.debug("Created new DLMS Push Notification replaying decoder");
+  public DlmsPushNotificationReplayingDecoder(final DlmsPushNotificationDecoder decoder) {
+    log.debug("Created new DLMS Push Notification replaying decoder");
+    this.decoder = decoder;
   }
 
   /**
@@ -48,7 +48,7 @@ public class DlmsPushNotificationReplayingDecoder
     final DlmsPushNotification dlmsPushNotification =
         this.decoder.decode(byteArray, ConnectionProtocol.TCP);
 
-    LOGGER.info("Decoded push notification: {}", dlmsPushNotification);
+    log.info("Decoded push notification: {}", dlmsPushNotification);
     out.add(dlmsPushNotification);
   }
 

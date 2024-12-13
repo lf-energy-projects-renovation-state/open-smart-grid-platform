@@ -21,6 +21,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opensmartgridplatform.dlms.DlmsPushNotification;
+import org.opensmartgridplatform.dlms.exceptions.ObjectConfigException;
+import org.opensmartgridplatform.dlms.services.ObjectConfigService;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.AlarmTypeDto;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,8 +53,14 @@ class DlmsPushNotificationReplayingDecoderTest {
   @Mock private ChannelHandlerContext ctx;
 
   @BeforeEach
-  void setUp() {
-    this.decoder = new DlmsPushNotificationReplayingDecoder();
+  void setUp() throws IOException, ObjectConfigException {
+    final ObjectConfigService objectConfigService = new ObjectConfigService();
+    final Dsmr4AlarmDecoder dsmr4AlarmDecoder = new Dsmr4AlarmDecoder(objectConfigService);
+    final Smr5AlarmDecoder smr5AlarmDecoder = new Smr5AlarmDecoder(objectConfigService);
+    final Mx382AlarmDecoder mx382AlarmDecoder = new Mx382AlarmDecoder();
+    final DlmsPushNotificationDecoder dlmsPushNotificationDecoder =
+        new DlmsPushNotificationDecoder(dsmr4AlarmDecoder, smr5AlarmDecoder, mx382AlarmDecoder);
+    this.decoder = new DlmsPushNotificationReplayingDecoder(dlmsPushNotificationDecoder);
   }
 
   @Test
