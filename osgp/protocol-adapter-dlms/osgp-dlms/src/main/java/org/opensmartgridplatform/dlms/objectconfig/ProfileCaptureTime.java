@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.model;
+package org.opensmartgridplatform.dlms.objectconfig;
 
 public enum ProfileCaptureTime {
   QUARTER_HOUR,
