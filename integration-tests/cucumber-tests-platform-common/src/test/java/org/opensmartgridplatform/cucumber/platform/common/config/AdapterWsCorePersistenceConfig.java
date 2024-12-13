@@ -28,8 +28,6 @@ public class AdapterWsCorePersistenceConfig extends ApplicationPersistenceConfig
   @Value("${entitymanager.packages.to.scan.osgp_adapter_ws_core}")
   private String entitymanagerPackagesToScan;
 
-  public AdapterWsCorePersistenceConfig() {}
-
   @Override
   protected String getDatabaseName() {
     return this.databaseName;

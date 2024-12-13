@@ -195,8 +195,6 @@ public class BundledGetPowerQualityProfileDataSteps extends BaseBundleSteps {
         .isEqualTo(Long.valueOf(expectedCaptureObject.get(DATA_INDEX)));
     assertThat(captureObject.getUnit())
         .isEqualTo(OsgpUnitType.valueOf(expectedCaptureObject.get(UNIT)));
-
-    this.validateValues(captureObject, expectedCaptureObjects);
   }
 
   private Map<String, String> getExpectedCaptureObject(
@@ -213,9 +211,6 @@ public class BundledGetPowerQualityProfileDataSteps extends BaseBundleSteps {
     assertThat(optExpectedCaptureObject).isPresent();
     return optExpectedCaptureObject.get();
   }
-
-  private void validateValues(
-      final CaptureObject captureObject, final List<Map<String, String>> expectedCaptureObjects) {}
 
   private void logData(final PowerQualityProfileData powerQualityProfileData) {
     log.info("| classId | logicalName | attributeIndex | dataIndex | unit |");

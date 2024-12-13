@@ -59,10 +59,14 @@ public class DlmsPersistenceConfigStub extends AbstractPersistenceConfig {
       }
 
       @Override
-      public void setLogWriter(final PrintWriter out) throws SQLException {}
+      public void setLogWriter(final PrintWriter out) throws SQLException {
+        // not implemented for this stub class
+      }
 
       @Override
-      public void setLoginTimeout(final int seconds) throws SQLException {}
+      public void setLoginTimeout(final int seconds) throws SQLException {
+        // not implemented for this stub class
+      }
 
       @Override
       public int getLoginTimeout() throws SQLException {

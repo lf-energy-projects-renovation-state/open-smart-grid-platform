@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -26,25 +25,25 @@ import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapte
 import org.springframework.core.io.ClassPathResource;
 
 @Slf4j
-public class FirmwareFileTest {
+class FirmwareFileTest {
 
-  private static final String filename = "test-short-v00400011-snffffffff-newmods.bin";
+  private static final String FILENAME = "test-short-v00400011-snffffffff-newmods.bin";
 
   private static byte[] byteArray;
 
   @BeforeEach
   public void init() throws IOException {
-    byteArray = Files.readAllBytes(new ClassPathResource(filename).getFile().toPath());
+    byteArray = Files.readAllBytes(new ClassPathResource(FILENAME).getFile().toPath());
   }
 
   @Test
-  public void testHeader() throws UnsupportedEncodingException {
+  void testHeader() {
     final FirmwareFile firmwareFile = new FirmwareFile(byteArray);
     final FirmwareFileHeader header = firmwareFile.getHeader();
     log.debug(header.toString());
-    assertThat(FirmwareFile.VALID_FIRMWARE_IMAGE_MAGIC_NUMBERS)
-        .contains(header.getFirmwareImageMagicNumberHex());
-    assertThat(header.getHeaderVersionInt()).isEqualTo(0);
+    assertThat(header.getFirmwareImageMagicNumberHex())
+        .isIn(FirmwareFile.VALID_FIRMWARE_IMAGE_MAGIC_NUMBERS);
+    assertThat(header.getHeaderVersionInt()).isZero();
     assertThat(header.getHeaderLengthInt()).isEqualTo(35);
     assertThat(header.getFirmwareImageVersionHex()).isEqualTo("11004000");
     assertThat(header.getFirmwareImageLengthInt()).isEqualTo(1000 - (35 + 16));
@@ -62,8 +61,7 @@ public class FirmwareFileTest {
   }
 
   @Test
-  public void testFittingMbusDeviceIdentificationNumber()
-      throws IOException, ProtocolAdapterException {
+  void testFittingMbusDeviceIdentificationNumber() {
 
     final FirmwareFile firmwareFile = this.createPartialWildcardFirmwareFile("FFFF0000");
 
@@ -75,8 +73,7 @@ public class FirmwareFileTest {
   }
 
   @Test
-  public void testFittingMbusDeviceIdentificationNumberWithFullWildcard()
-      throws IOException, ProtocolAdapterException {
+  void testFittingMbusDeviceIdentificationNumberWithFullWildcard() {
 
     final FirmwareFile firmwareFile = this.createPartialWildcardFirmwareFile("FFFFFFFF");
 
@@ -89,8 +86,7 @@ public class FirmwareFileTest {
   }
 
   @Test
-  public void testMisfitMbusDeviceIdentificationNumber()
-      throws IOException, ProtocolAdapterException {
+  void testMisfitMbusDeviceIdentificationNumber() {
     final FirmwareFile firmwareFile = this.createPartialWildcardFirmwareFile("FFFF0000");
     final String reversedWildcard = "0000FFFF";
     final String identificationNumber = "00010000";
@@ -146,17 +142,16 @@ public class FirmwareFileTest {
 
   private FirmwareFile createPartialWildcardFirmwareFile(final String hexWildcard) {
     final byte[] clonedByteArray = byteArray.clone();
-    final byte[] byteArray = new BigInteger(hexWildcard.toLowerCase(), 16).toByteArray();
-    clonedByteArray[22] = byteArray[1];
-    clonedByteArray[23] = byteArray[2];
-    clonedByteArray[24] = byteArray[3];
-    clonedByteArray[25] = byteArray[4];
-    final FirmwareFile firmwareFile = new FirmwareFile(clonedByteArray);
-    return firmwareFile;
+    final byte[] sourceByteArray = new BigInteger(hexWildcard.toLowerCase(), 16).toByteArray();
+    clonedByteArray[22] = sourceByteArray[1];
+    clonedByteArray[23] = sourceByteArray[2];
+    clonedByteArray[24] = sourceByteArray[3];
+    clonedByteArray[25] = sourceByteArray[4];
+    return new FirmwareFile(clonedByteArray);
   }
 
   @Test
-  public void testMbusDeviceIdentificationNumber() throws IOException, ProtocolAdapterException {
+  void testMbusDeviceIdentificationNumber() throws ProtocolAdapterException {
     final String id = "10000540";
     final IdentificationNumber mbusDeviceIdentificationNumberInput =
         IdentificationNumber.fromTextualRepresentation(id);
@@ -178,7 +173,7 @@ public class FirmwareFileTest {
   }
 
   @Test
-  public void testImageIdentifierForMbusDevice() throws ProtocolAdapterException {
+  void testImageIdentifierForMbusDevice() throws ProtocolAdapterException {
     final FirmwareFile firmwareFile = new FirmwareFile(byteArray);
     firmwareFile.setMbusDeviceIdentificationNumber(
         IdentificationNumber.fromTextualRepresentation("16019864"));

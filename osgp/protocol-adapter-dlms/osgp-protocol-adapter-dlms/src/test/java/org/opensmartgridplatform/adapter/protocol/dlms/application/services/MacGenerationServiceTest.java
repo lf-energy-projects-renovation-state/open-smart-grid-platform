@@ -30,7 +30,7 @@ public class MacGenerationServiceTest {
   @InjectMocks MacGenerationService macGenerationService;
   @Mock SecretManagementService secretManagementService;
 
-  static final String fwFilename1 = "test-short-v00400011-snffffffff-newmods.bin";
+  static final String FW_FILENAME_1 = "test-short-v00400011-snffffffff-newmods.bin";
 
   final byte[] firmwareUpdateAuthenticationKey1 = Hex.decode("F9AA0123456789012345D7AFCCD41BD1");
   private final String deviceIdentification1 = "G0035161000054016";
@@ -46,7 +46,7 @@ public class MacGenerationServiceTest {
 
   @BeforeAll
   public static void init() throws IOException, ProtocolAdapterException {
-    byteArray1 = Files.readAllBytes(new ClassPathResource(fwFilename1).getFile().toPath());
+    byteArray1 = Files.readAllBytes(new ClassPathResource(FW_FILENAME_1).getFile().toPath());
     // Same firmware file but now with wildcarded mbusversion (Florian firmware)
     final FirmwareFile firmwareFile2 = new FirmwareFile(byteArray1);
     firmwareFile2.setMbusVersion(255);

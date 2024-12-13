@@ -42,8 +42,6 @@ class MonitoringServiceTest {
 
   public static final String NETWORK_ADDRESS = "127.0.0.1";
 
-  private static final String DEVICE_MODEL_CODE = "BK-G4 ETB WR";
-
   public static final int BTS_580 = 580;
 
   public static final int CELL_ID_1 = 1;
@@ -123,8 +121,6 @@ class MonitoringServiceTest {
         MonitoringService.class.getMethod(methodName, MessageMetadata.class, clazz);
     method.invoke(this.monitoringService, messageMetadata, mock(clazz));
   }
-
-  private void verifyMessageMetadata() {}
 
   private static SmartMeter mockSmartMeter(final String deviceModelCode, final Short channel) {
     final DeviceModel deviceModel = mock(DeviceModel.class);

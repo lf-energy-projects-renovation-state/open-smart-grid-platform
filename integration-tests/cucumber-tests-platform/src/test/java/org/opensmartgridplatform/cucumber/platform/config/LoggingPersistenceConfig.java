@@ -28,8 +28,6 @@ public class LoggingPersistenceConfig extends ApplicationPersistenceConfiguratio
   @Value("${entitymanager.packages.to.scan.logging}")
   private String entitymanagerPackagesToScan;
 
-  public LoggingPersistenceConfig() {}
-
   @Override
   protected String getDatabaseName() {
     return this.databaseName;

@@ -29,8 +29,6 @@ public class CorePersistenceConfig extends ApplicationPersistenceConfiguration {
   @Value("${entitymanager.packages.to.scan.core}")
   private String entitymanagerPackagesToScan;
 
-  public CorePersistenceConfig() {}
-
   /**
    * Method for creating the Data Source.
    *
