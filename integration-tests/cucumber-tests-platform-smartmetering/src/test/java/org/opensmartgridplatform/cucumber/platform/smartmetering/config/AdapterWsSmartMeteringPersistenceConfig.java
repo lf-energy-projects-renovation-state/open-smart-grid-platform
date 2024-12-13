@@ -30,8 +30,6 @@ public class AdapterWsSmartMeteringPersistenceConfig extends ApplicationPersiste
   @Value("${entitymanager.packages.to.scan}")
   private String entitymanagerPackagesToScan;
 
-  public AdapterWsSmartMeteringPersistenceConfig() {}
-
   @Override
   protected String getDatabaseName() {
     return this.databaseName;

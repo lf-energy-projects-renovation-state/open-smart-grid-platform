@@ -34,7 +34,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
-public class JasperWirelessTerminalRestClientTest {
+class JasperWirelessTerminalRestClientTest {
 
   private static final String SERVICE_GET_SESSION_INFO = "/rws/api/%s/devices/%s/sessionInfo";
   private static final String ICCID = "12345";
@@ -69,7 +69,7 @@ public class JasperWirelessTerminalRestClientTest {
   }
 
   @Test
-  public void testOk() throws OsgpJasperException {
+  void testOk() throws OsgpJasperException {
 
     when(this.jasperwirelessRestTemplate.exchange(
             eq(URL), eq(HttpMethod.GET), any(HttpEntity.class), eq(GetSessionInfoResponse.class)))
@@ -83,7 +83,7 @@ public class JasperWirelessTerminalRestClientTest {
   }
 
   @Test
-  public void testExpiredSession() throws OsgpJasperException {
+  void testExpiredSession() throws OsgpJasperException {
 
     when(this.jasperwirelessRestTemplate.exchange(
             eq(URL), eq(HttpMethod.GET), any(HttpEntity.class), eq(GetSessionInfoResponse.class)))
@@ -97,7 +97,7 @@ public class JasperWirelessTerminalRestClientTest {
   }
 
   @Test
-  public void testNeverHadSession() throws OsgpJasperException {
+  void testNeverHadSession() throws OsgpJasperException {
 
     when(this.jasperwirelessRestTemplate.exchange(
             eq(URL), eq(HttpMethod.GET), any(HttpEntity.class), eq(GetSessionInfoResponse.class)))
@@ -111,7 +111,7 @@ public class JasperWirelessTerminalRestClientTest {
   }
 
   @Test
-  public void testInvalidIccId() throws OsgpJasperException {
+  void testInvalidIccId() {
 
     when(this.jasperwirelessRestTemplate.exchange(
             eq(URL), eq(HttpMethod.GET), any(HttpEntity.class), eq(GetSessionInfoResponse.class)))
@@ -127,7 +127,7 @@ public class JasperWirelessTerminalRestClientTest {
   }
 
   @Test
-  public void testUnmappedErrorException() throws OsgpJasperException {
+  void testUnmappedErrorException() {
 
     when(this.jasperwirelessRestTemplate.exchange(
             eq(URL), eq(HttpMethod.GET), any(HttpEntity.class), eq(GetSessionInfoResponse.class)))
@@ -156,9 +156,9 @@ public class JasperWirelessTerminalRestClientTest {
 
   private ResponseEntity<GetSessionInfoResponse> createResponseEntity(
       final HttpStatus httpStatus, final SessionType sessionType) {
-    Date endSession;
-    Date startSession;
-    String ipAddress;
+    final Date endSession;
+    final Date startSession;
+    final String ipAddress;
     switch (sessionType) {
       case EXPIRED_SESSION:
         startSession = new Date(Instant.now().minus(6, ChronoUnit.MINUTES).toEpochMilli());
@@ -170,10 +170,6 @@ public class JasperWirelessTerminalRestClientTest {
         endSession = null;
         ipAddress = IP_ADDRESS;
         break;
-      case NEVER_HAD_SESSION:
-        startSession = null;
-        endSession = null;
-        ipAddress = null;
       default:
         startSession = null;
         endSession = null;

@@ -31,8 +31,6 @@ public class SecretManagementPersistenceConfig extends ApplicationPersistenceCon
   @Value("${entitymanager.packages.to.scan.secret_management}")
   private String entitymanagerPackagesToScan;
 
-  public SecretManagementPersistenceConfig() {}
-
   /**
    * Method for creating the Data Source.
    *

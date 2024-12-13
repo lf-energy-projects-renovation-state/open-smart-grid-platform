@@ -93,8 +93,7 @@ public class DateTimeHelper {
       case "yesterday":
         retval = retval.minusDays(1);
         break;
-      case "now":
-      case "today":
+      case "now", "today":
         break;
       default:
         throw new IllegalArgumentException(
@@ -110,8 +109,7 @@ public class DateTimeHelper {
     if (whenMatcher.groupCount() > 1 && whenMatcher.group(2).equals("at")) {
 
       switch (whenMatcher.group(3)) {
-        case "midday":
-        case "noon":
+        case "midday", "noon":
           retval = retval.withHour(12);
           break;
         case "midnight":
@@ -147,6 +145,8 @@ public class DateTimeHelper {
         case "years":
           retval = retval.plusYears(numberToAddOrSubstract);
           break;
+        default:
+          // do nothing
       }
     } else {
       switch (what) {
@@ -168,6 +168,8 @@ public class DateTimeHelper {
         case "years":
           retval = retval.minusYears(numberToAddOrSubstract);
           break;
+        default:
+          // do nothing
       }
     }
 
@@ -192,7 +194,7 @@ public class DateTimeHelper {
     try {
       dateTime = getDateTime(startDate);
     } catch (final IllegalArgumentException e) {
-      LOGGER.debug("The string {} could not be parsed by DateTimeHelper.getDateTime");
+      LOGGER.debug("The string {} could not be parsed by DateTimeHelper.getDateTime", startDate);
       dateTime = JavaTimeHelpers.parseToZonedDateTime(startDate);
     }
     if (dateTime == null) {

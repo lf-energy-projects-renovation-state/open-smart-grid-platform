@@ -4,7 +4,6 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.firmware;
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -316,7 +315,7 @@ public class UpdateFirmwareCommandExecutor
     try {
       final MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
       final byte[] digest = messageDigest.digest(content);
-      return new BigInteger(1, digest).toString(16);
+      return Hex.toHexString(digest);
     } catch (final NoSuchAlgorithmException e) {
       log.error("Error calculating digest", e);
       return "";

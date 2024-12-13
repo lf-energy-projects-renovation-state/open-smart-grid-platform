@@ -6,27 +6,22 @@ package org.opensmartgridplatform.dto.valueobjects.smartmetering;
 
 import java.util.Date;
 
-public class MeterReadsGasResponseDto extends ActionResponseDto {
+public class MeterReadsGasResponseDto extends MeterReadsResponseWithLogTimeDto {
 
   private static final long serialVersionUID = -156966569210717654L;
 
-  private final Date logTime;
   private final Date captureTime;
   private final DlmsMeterValueDto consumption;
 
   public MeterReadsGasResponseDto(
       final Date logTime, final DlmsMeterValueDto consumption, final Date captureTime) {
-    this.logTime = new Date(logTime.getTime());
+    super(logTime);
     if (captureTime != null) {
       this.captureTime = new Date(captureTime.getTime());
     } else {
       this.captureTime = null;
     }
     this.consumption = consumption;
-  }
-
-  public Date getLogTime() {
-    return new Date(this.logTime.getTime());
   }
 
   public Date getCaptureTime() {
@@ -44,7 +39,7 @@ public class MeterReadsGasResponseDto extends ActionResponseDto {
   @Override
   public String toString() {
     return "MeterReadsGas [logTime="
-        + this.logTime
+        + this.getLogTime()
         + ", captureTime="
         + this.captureTime
         + ", consumption="

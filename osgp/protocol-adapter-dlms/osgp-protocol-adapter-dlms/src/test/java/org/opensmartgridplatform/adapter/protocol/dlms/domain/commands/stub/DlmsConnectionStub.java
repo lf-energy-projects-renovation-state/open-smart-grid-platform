@@ -129,13 +129,19 @@ public class DlmsConnectionStub implements DlmsConnection {
   }
 
   @Override
-  public void changeClientGlobalAuthenticationKey(final byte[] var1) {}
+  public void changeClientGlobalAuthenticationKey(final byte[] var1) {
+    // not implemented for this stub class
+  }
 
   @Override
-  public void changeClientGlobalEncryptionKey(final byte[] var1) {}
+  public void changeClientGlobalEncryptionKey(final byte[] var1) {
+    // not implemented for this stub class
+  }
 
   @Override
-  public void disconnect() {}
+  public void disconnect() {
+    // not implemented for this stub class
+  }
 
   @Override
   public void close() {

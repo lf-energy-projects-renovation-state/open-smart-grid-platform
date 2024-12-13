@@ -11,5 +11,7 @@ import org.quartz.JobExecutionException;
 class TestJob implements Job {
 
   @Override
-  public void execute(final JobExecutionContext jobExecutionContext) throws JobExecutionException {}
+  public void execute(final JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    // this dummy test job does not do anything on execution
+  }
 }

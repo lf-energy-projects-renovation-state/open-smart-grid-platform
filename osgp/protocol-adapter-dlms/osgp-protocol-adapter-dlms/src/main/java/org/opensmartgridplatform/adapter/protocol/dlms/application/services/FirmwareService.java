@@ -4,11 +4,11 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.application.services;
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.encoders.Hex;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.firmware.GetFirmwareVersionsCommandExecutor;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.firmware.UpdateFirmwareCommandExecutor;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.firmware.firmwarefile.FirmwareFile;
@@ -161,7 +161,7 @@ public class FirmwareService {
     try {
       final MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
       final byte[] digest = messageDigest.digest(content);
-      digestStr = new BigInteger(1, digest).toString(16);
+      digestStr = Hex.toHexString(digest);
     } catch (final NoSuchAlgorithmException e) {
       log.error("Error calculating digest", e);
       throw new ProtocolAdapterException(

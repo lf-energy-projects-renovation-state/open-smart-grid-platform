@@ -23,8 +23,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
     basePackageClasses = {DlmsDeviceRepository.class})
 public class AdapterProtocolDlmsPersistenceConfig extends ApplicationPersistenceConfiguration {
 
-  public AdapterProtocolDlmsPersistenceConfig() {}
-
   @Value("${db.name.osgp_adapter_protocol_dlms}")
   private String databaseName;
 
