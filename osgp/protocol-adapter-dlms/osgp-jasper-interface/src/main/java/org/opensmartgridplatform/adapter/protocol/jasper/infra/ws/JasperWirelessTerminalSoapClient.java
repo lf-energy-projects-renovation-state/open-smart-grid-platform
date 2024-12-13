@@ -9,7 +9,7 @@ import com.jasperwireless.api.ws.service.GetSessionInfoResponse;
 import com.jasperwireless.api.ws.service.ObjectFactory;
 import com.jasperwireless.api.ws.service.SessionInfoType;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ws.security.WSConstants;
+import org.apache.wss4j.common.WSS4JConstants;
 import org.opensmartgridplatform.adapter.protocol.jasper.client.JasperWirelessTerminalClient;
 import org.opensmartgridplatform.jasper.config.JasperWirelessAccess;
 import org.opensmartgridplatform.jasper.exceptions.OsgpJasperException;
@@ -91,13 +91,13 @@ public class JasperWirelessTerminalSoapClient implements JasperWirelessTerminalC
         sessionInfoType.getDateSessionEnded().toGregorianCalendar().getTime());
   }
 
-  // Sonar marks 'setSecurementPasswordType(WSConstants.PW_TEXT)' as exposing a password.
+  // Sonar marks 'setSecurementPasswordType(WSS4JConstants.PW_TEXT)' as exposing a password.
   // This is wrong, it just sets the password *type*
   @SuppressWarnings("java:S6437")
   private static void setUsernameToken(
       final Wss4jSecurityInterceptor interceptor, final String user, final String pass) {
     interceptor.setSecurementUsername(user);
     interceptor.setSecurementPassword(pass);
-    interceptor.setSecurementPasswordType(WSConstants.PW_TEXT);
+    interceptor.setSecurementPasswordType(WSS4JConstants.PW_TEXT);
   }
 }
