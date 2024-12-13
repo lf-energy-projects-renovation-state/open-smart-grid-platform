@@ -91,6 +91,6 @@ SPDX-License-Identifier: Apache-2.0
     <module>osgp-iec61850</module>
     <module>osgp-core-db-api-iec61850</module>
     <module>osgp-protocol-adapter-iec61850</module>
-    <module>protocol-simulator-iec61850</module>
+    <module>osgp-protocol-simulator-iec61850</module>
   </modules>
 </project>
