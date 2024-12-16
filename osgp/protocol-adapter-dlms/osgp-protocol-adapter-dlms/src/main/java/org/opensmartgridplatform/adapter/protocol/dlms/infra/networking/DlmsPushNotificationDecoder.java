@@ -6,19 +6,32 @@ package org.opensmartgridplatform.adapter.protocol.dlms.infra.networking;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import lombok.extern.slf4j.Slf4j;
 import org.opensmartgridplatform.dlms.DlmsPushNotification;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Slf4j
+@Component()
 public class DlmsPushNotificationDecoder {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DlmsPushNotificationDecoder.class);
+  private final Dsmr4AlarmDecoder dsmr4AlarmDecoder;
+  private final Smr5AlarmDecoder smr5AlarmDecoder;
+  private final Mx382AlarmDecoder mx382AlarmDecoder;
 
   // see DLMS Green Book, 9.5 Abstract syntax of COSEM PDUs
   // data-notification [15],
   // event-notification-request [194]
   private static final byte DATA_NOTIFICATION = 0x0F;
   private static final byte EVENT_NOTIFICATION_REQUEST = (byte) 0xC2;
+
+  public DlmsPushNotificationDecoder(
+      final Dsmr4AlarmDecoder dsmr4AlarmDecoder,
+      final Smr5AlarmDecoder smr5AlarmDecoder,
+      final Mx382AlarmDecoder mx382AlarmDecoder) {
+    this.dsmr4AlarmDecoder = dsmr4AlarmDecoder;
+    this.smr5AlarmDecoder = smr5AlarmDecoder;
+    this.mx382AlarmDecoder = mx382AlarmDecoder;
+  }
 
   public DlmsPushNotification decode(
       final byte[] message, final ConnectionProtocol connectionProtocol)
@@ -78,20 +91,17 @@ public class DlmsPushNotificationDecoder {
     final boolean mx382alarm = message[8] == EVENT_NOTIFICATION_REQUEST;
 
     final InputStream inputStream = new ByteArrayInputStream(message);
-    LOGGER.info("Decoding alarm, SMR5 alarm: {}, MX382 alarm: {}", smr5alarm, mx382alarm);
+    log.info("Decoding alarm, SMR5 alarm: {}, MX382 alarm: {}", smr5alarm, mx382alarm);
 
     if (smr5alarm) {
-      final Smr5AlarmDecoder alarmDecoder = new Smr5AlarmDecoder();
-      pushNotification = alarmDecoder.decodeSmr5alarm(inputStream);
+      pushNotification = this.smr5AlarmDecoder.decodeSmr5alarm(inputStream);
     } else if (mx382alarm) {
-      final Mx382AlarmDecoder alarmDecoder = new Mx382AlarmDecoder();
-      pushNotification = alarmDecoder.decodeMx382alarm(inputStream, connectionProtocol);
+      pushNotification = this.mx382AlarmDecoder.decodeMx382alarm(inputStream, connectionProtocol);
     } else {
-      final Dsmr4AlarmDecoder alarmDecoder = new Dsmr4AlarmDecoder();
-      pushNotification = alarmDecoder.decodeDsmr4alarm(inputStream);
+      pushNotification = this.dsmr4AlarmDecoder.decodeDsmr4alarm(inputStream);
     }
 
-    LOGGER.info("Decoded push notification: {}", pushNotification);
+    log.info("Decoded push notification: {}", pushNotification);
     return pushNotification;
   }
 }

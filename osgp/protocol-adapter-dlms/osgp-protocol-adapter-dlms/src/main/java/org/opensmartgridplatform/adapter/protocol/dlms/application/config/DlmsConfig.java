@@ -31,6 +31,7 @@ import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.Lls0Conn
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.Lls1Connector;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.repositories.DlmsDeviceRepository;
 import org.opensmartgridplatform.adapter.protocol.dlms.infra.networking.DlmsChannelHandlerServer;
+import org.opensmartgridplatform.adapter.protocol.dlms.infra.networking.DlmsPushNotificationDecoder;
 import org.opensmartgridplatform.adapter.protocol.dlms.infra.networking.DlmsPushNotificationReplayingDecoder;
 import org.opensmartgridplatform.dlms.exceptions.ObjectConfigException;
 import org.opensmartgridplatform.dlms.services.ObjectConfigService;
@@ -73,7 +74,7 @@ public class DlmsConfig extends AbstractConfig {
    * @return a DLMS alarm server bootstrap.
    */
   @Bean()
-  public ServerBootstrap serverBootstrap() {
+  public ServerBootstrap serverBootstrap(final DlmsPushNotificationDecoder decoder) {
 
     final ServerBootstrap bootstrap = new ServerBootstrap();
     bootstrap.group(this.serverBossGroup(), this.serverWorkerGroup());
@@ -82,7 +83,8 @@ public class DlmsConfig extends AbstractConfig {
         new ChannelInitializer<SocketChannel>() {
           @Override
           protected void initChannel(final SocketChannel ch) {
-            DlmsConfig.this.createChannelPipeline(ch, DlmsConfig.this.dlmsChannelHandlerServer());
+            DlmsConfig.this.createChannelPipeline(
+                ch, DlmsConfig.this.dlmsChannelHandlerServer(), decoder);
             LOGGER.info("Created new DLMS handler pipeline for server");
           }
         });
@@ -98,12 +100,14 @@ public class DlmsConfig extends AbstractConfig {
   }
 
   private ChannelPipeline createChannelPipeline(
-      final SocketChannel channel, final ChannelHandler handler) {
+      final SocketChannel channel,
+      final ChannelHandler handler,
+      final DlmsPushNotificationDecoder decoder) {
     final ChannelPipeline pipeline = channel.pipeline();
 
     pipeline.addLast("loggingHandler", new LoggingHandler(LogLevel.INFO));
     pipeline.addLast(
-        "dlmsPushNotificationReplayingDecoder", new DlmsPushNotificationReplayingDecoder());
+        "dlmsPushNotificationReplayingDecoder", new DlmsPushNotificationReplayingDecoder(decoder));
     pipeline.addLast("dlmsChannelHandler", handler);
 
     return pipeline;

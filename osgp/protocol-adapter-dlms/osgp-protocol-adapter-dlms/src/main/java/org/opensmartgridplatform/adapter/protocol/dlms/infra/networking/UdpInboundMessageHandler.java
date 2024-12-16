@@ -9,7 +9,6 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.opensmartgridplatform.dlms.DlmsPushNotification;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
@@ -21,9 +20,15 @@ public class UdpInboundMessageHandler {
 
   private static final String IP_ADDRESS = "ip_address";
 
-  @Autowired private PushedMessageProcessor pushedMessageProcessor;
+  private final PushedMessageProcessor pushedMessageProcessor;
+  private final DlmsPushNotificationDecoder decoder;
 
-  private final DlmsPushNotificationDecoder decoder = new DlmsPushNotificationDecoder();
+  public UdpInboundMessageHandler(
+      final PushedMessageProcessor pushedMessageProcessor,
+      final DlmsPushNotificationDecoder decoder) {
+    this.pushedMessageProcessor = pushedMessageProcessor;
+    this.decoder = decoder;
+  }
 
   @ServiceActivator(inputChannel = "inboundChannel")
   public void handeMessage(final Message message, @Headers final Map<String, Object> headerMap)

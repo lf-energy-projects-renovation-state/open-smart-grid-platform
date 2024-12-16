@@ -4,45 +4,52 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.infra.networking;
 
-import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.DlmsObjectType.EXTERNAL_TRIGGER_CSD;
-import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.DlmsObjectType.EXTERNAL_TRIGGER_SMS;
-import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.DlmsObjectType.PUSH_SCHEDULER;
-import static org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.DlmsObjectType.PUSH_SETUP_SCHEDULER;
+import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.EXTERNAL_TRIGGER_CSD;
+import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.EXTERNAL_TRIGGER_SMS;
+import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.PUSH_SCHEDULER;
+import static org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType.PUSH_SETUP_SCHEDULER;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.DlmsObjectConfigDsmr422;
+import lombok.extern.slf4j.Slf4j;
+import org.openmuc.jdlms.ObisCode;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
 import org.opensmartgridplatform.dlms.DlmsPushNotification;
+import org.opensmartgridplatform.dlms.exceptions.ObjectConfigException;
 import org.opensmartgridplatform.dlms.objectconfig.DlmsObjectType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opensmartgridplatform.dlms.services.ObjectConfigService;
+import org.springframework.stereotype.Component;
 
+@Slf4j
+@Component()
 public class Dsmr4AlarmDecoder extends AlarmDecoder {
 
-  private final DlmsObjectConfigDsmr422 dlmsObjectConfigDsmr422 = new DlmsObjectConfigDsmr422();
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(Dsmr4AlarmDecoder.class);
+  private final ObjectConfigService objectConfigService;
 
   /**
    * The elements inside the DSMR4 DLMS Push notification (Alarm or Wakeup SMS are expressed in
-   * bytes separated by a comma (byte 0x2C).
+   * bytes separated b0y a comma (byte 0x2C).
    */
   private static final byte COMMA = 0x2C;
 
-  private final DlmsPushNotification.Builder builder = new DlmsPushNotification.Builder();
+  public Dsmr4AlarmDecoder(final ObjectConfigService objectConfigService) {
+    this.objectConfigService = objectConfigService;
+  }
 
   public DlmsPushNotification decodeDsmr4alarm(final InputStream inputStream)
       throws UnrecognizedMessageDataException {
+    final DlmsPushNotification.Builder builder = new DlmsPushNotification.Builder();
 
-    this.decodeEquipmentIdentifier(inputStream);
-    this.decodeReceivedData(inputStream);
-    return this.builder.build();
+    this.decodeEquipmentIdentifier(inputStream, builder);
+    this.decodeReceivedData(inputStream, builder);
+
+    return builder.build();
   }
 
-  private void decodeEquipmentIdentifier(final InputStream inputStream)
+  private void decodeEquipmentIdentifier(
+      final InputStream inputStream, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
 
     final byte[] equipmentIdentifierPlusSeparatorBytes =
@@ -59,11 +66,12 @@ public class Dsmr4AlarmDecoder extends AlarmDecoder {
         Arrays.copyOfRange(equipmentIdentifierPlusSeparatorBytes, 0, EQUIPMENT_IDENTIFIER_LENGTH);
     final String equipmentIdentifier =
         new String(equipmentIdentifierBytes, StandardCharsets.US_ASCII);
-    this.builder.withEquipmentIdentifier(equipmentIdentifier);
-    this.builder.appendBytes(equipmentIdentifierPlusSeparatorBytes);
+    builder.withEquipmentIdentifier(equipmentIdentifier);
+    builder.appendBytes(equipmentIdentifierPlusSeparatorBytes);
   }
 
-  private void decodeReceivedData(final InputStream inputStream)
+  private void decodeReceivedData(
+      final InputStream inputStream, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
     // SLIM-1711 Is a very weird bug, where readableBytes turns out to be
     // almost MAXINT
@@ -85,9 +93,9 @@ public class Dsmr4AlarmDecoder extends AlarmDecoder {
     }
 
     if (readableBytes == NUMBER_OF_BYTES_FOR_ALARM) {
-      this.decodeAlarmRegisterData(inputStream, this.builder, DlmsObjectType.ALARM_REGISTER_1);
+      this.decodeAlarmRegisterData(inputStream, builder, DlmsObjectType.ALARM_REGISTER_1);
     } else if (readableBytes == NUMBER_OF_BYTES_FOR_LOGICAL_NAME) {
-      this.decodeObisCodeData(inputStream);
+      this.decodeObisCodeData(inputStream, builder);
     } else {
       throw new UnrecognizedMessageDataException(
           "Incorrect amount of bytes: "
@@ -99,56 +107,58 @@ public class Dsmr4AlarmDecoder extends AlarmDecoder {
     }
   }
 
-  private void decodeObisCodeData(final InputStream inputStream)
+  private void decodeObisCodeData(
+      final InputStream inputStream, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
 
     final byte[] logicalNameBytes = this.readBytes(inputStream, NUMBER_OF_BYTES_FOR_LOGICAL_NAME);
 
     try {
       if (this.isLogicalNameSmsTrigger(logicalNameBytes)) {
-        this.builder.withTriggerType(PUSH_SMS_TRIGGER);
+        builder.withTriggerType(PUSH_SMS_TRIGGER);
       } else if (this.isLogicalNameCsdTrigger(logicalNameBytes)) {
-        LOGGER.warn("CSD Push notification not supported");
-        this.builder.withTriggerType(PUSH_CSD_TRIGGER);
+        log.warn("CSD Push notification not supported");
+        builder.withTriggerType(PUSH_CSD_TRIGGER);
       } else if (this.isLogicalNameSchedulerTrigger(logicalNameBytes)) {
-        LOGGER.warn("Scheduler Push notification not supported");
-        this.builder.withTriggerType(PUSH_SCHEDULER_TRIGGER);
+        log.warn("Scheduler Push notification not supported");
+        builder.withTriggerType(PUSH_SCHEDULER_TRIGGER);
       } else {
-        LOGGER.warn("Unknown Push notification not supported. Unable to decode");
-        this.builder.withTriggerType("");
+        log.warn("Unknown Push notification not supported. Unable to decode");
+        builder.withTriggerType("");
       }
     } catch (final ProtocolAdapterException e) {
       throw new UnrecognizedMessageDataException("Error decoding logical name", e);
     }
 
-    this.builder.withAlarms(null);
-    this.builder.appendBytes(logicalNameBytes);
+    builder.withAlarms(null);
+    builder.appendBytes(logicalNameBytes);
   }
 
   private boolean isLogicalNameSmsTrigger(final byte[] logicalNameBytes)
       throws ProtocolAdapterException {
-    // DSMR4 has specific objects for the different external trigger types
-    // for SMS and CSD
-    return Arrays.equals(
-        this.dlmsObjectConfigDsmr422.getObisForObject(EXTERNAL_TRIGGER_SMS).bytes(),
-        logicalNameBytes);
+    // DSMR4 has specific objects for the different external trigger types for SMS and CSD
+    return Arrays.equals(this.getObisBytes(EXTERNAL_TRIGGER_SMS), logicalNameBytes);
   }
 
   private boolean isLogicalNameCsdTrigger(final byte[] logicalNameBytes)
       throws ProtocolAdapterException {
-    // DSMR4 has specific objects for the different external trigger types
-    // for SMS and CSD
-    return Arrays.equals(
-        this.dlmsObjectConfigDsmr422.getObisForObject(EXTERNAL_TRIGGER_CSD).bytes(),
-        logicalNameBytes);
+    // DSMR4 has specific objects for the different external trigger types for SMS and CSD
+    return Arrays.equals(this.getObisBytes(EXTERNAL_TRIGGER_CSD), logicalNameBytes);
   }
 
   private boolean isLogicalNameSchedulerTrigger(final byte[] logicalNameBytes)
       throws ProtocolAdapterException {
-    return Arrays.equals(
-            this.dlmsObjectConfigDsmr422.getObisForObject(PUSH_SCHEDULER).bytes(), logicalNameBytes)
-        || Arrays.equals(
-            this.dlmsObjectConfigDsmr422.getObisForObject(PUSH_SETUP_SCHEDULER).bytes(),
-            logicalNameBytes);
+    return Arrays.equals(this.getObisBytes(PUSH_SCHEDULER), logicalNameBytes)
+        || Arrays.equals(this.getObisBytes(PUSH_SETUP_SCHEDULER), logicalNameBytes);
+  }
+
+  private byte[] getObisBytes(final DlmsObjectType type) throws ProtocolAdapterException {
+    try {
+      final String obis = this.objectConfigService.getCosemObject("DSMR", "4.2.2", type).getObis();
+      return new ObisCode(obis).bytes();
+    } catch (final ObjectConfigException e) {
+      throw new ProtocolAdapterException(
+          "Missing " + type.name() + " in object config for DSMR 4.2.2", e);
+    }
   }
 }

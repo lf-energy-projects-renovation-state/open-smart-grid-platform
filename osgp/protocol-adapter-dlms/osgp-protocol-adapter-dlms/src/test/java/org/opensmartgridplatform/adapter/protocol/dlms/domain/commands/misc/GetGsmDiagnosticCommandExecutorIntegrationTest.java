@@ -21,13 +21,13 @@ import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.ObisCode;
 import org.openmuc.jdlms.datatypes.CosemDateTime;
 import org.openmuc.jdlms.datatypes.DataObject;
-import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.dlmsobjectconfig.model.CommunicationMethod;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.stub.DlmsConnectionManagerStub;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.stub.DlmsConnectionStub;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.DlmsHelper;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.DlmsDevice;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.Protocol;
 import org.opensmartgridplatform.dlms.exceptions.ObjectConfigException;
+import org.opensmartgridplatform.dlms.objectconfig.CommunicationMethod;
 import org.opensmartgridplatform.dlms.services.ObjectConfigService;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.AdjacentCellInfoDto;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.CellInfoDto;
@@ -186,7 +186,7 @@ class GetGsmDiagnosticCommandExecutorIntegrationTest {
     final DlmsDevice device = new DlmsDevice();
     device.setDeviceIdentification("123456789012");
     device.setProtocol(protocol);
-    device.setCommunicationMethod(method.getMethodName());
+    device.setCommunicationMethod(method.name());
     return device;
   }
 

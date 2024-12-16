@@ -87,6 +87,10 @@ public enum DlmsDataType {
   @JsonProperty("mechanism_name_type")
   MECHANISM_NAME_TYPE,
 
+  // Class-id 28: Auto answer
+  @JsonProperty("nr_rings_type")
+  NR_RINGS_TYPE,
+
   // Class-id 47: GSM diagnostic
   @JsonProperty("cell_info_type")
   CELL_INFO_TYPE

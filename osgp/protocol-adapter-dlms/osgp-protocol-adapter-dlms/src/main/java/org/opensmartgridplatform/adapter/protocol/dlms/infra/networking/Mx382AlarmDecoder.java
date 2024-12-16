@@ -14,7 +14,9 @@ import java.util.Set;
 import org.bouncycastle.util.encoders.Hex;
 import org.opensmartgridplatform.dlms.DlmsPushNotification;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.AlarmTypeDto;
+import org.springframework.stereotype.Component;
 
+@Component()
 public class Mx382AlarmDecoder extends AlarmDecoder {
 
   private static final byte EVENT_NOTIFICATION_REQUEST = (byte) 0xC2;
@@ -28,8 +30,6 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
 
   public static final String EXPECTED_MESSAGE_TEMPLATE = "Expected a %s (%s), within message: (%s)";
 
-  private final DlmsPushNotification.Builder builder = new DlmsPushNotification.Builder();
-
   public DlmsPushNotification decodeMx382alarm(
       final InputStream inputStream, final ConnectionProtocol connectionProtocol)
       throws UnrecognizedMessageDataException {
@@ -42,36 +42,40 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
 
   private DlmsPushNotification decodeMx382alarmTcp(final InputStream inputStream)
       throws UnrecognizedMessageDataException {
-    this.handleWpduHeaderBytes(inputStream, "WPDU-header");
-    this.checkByte(inputStream, EVENT_NOTIFICATION_REQUEST, "event-notification-request");
+    final DlmsPushNotification.Builder builder = new DlmsPushNotification.Builder();
+
+    this.handleWpduHeaderBytes(inputStream, "WPDU-header", builder);
+    this.checkByte(inputStream, EVENT_NOTIFICATION_REQUEST, "event-notification-request", builder);
 
     // Datetime is read and skipped
     this.handleDateTime(inputStream);
 
-    this.handleCosemAttributeDescriptor(inputStream);
+    this.handleCosemAttributeDescriptor(inputStream, builder);
     // Get equipment identifier and add it to the new push notification
-    this.handleEquipmentIdentifier(inputStream);
+    this.handleEquipmentIdentifier(inputStream, builder);
     // Add alarmbits to the new push notification
-    this.addTriggerType(PUSH_ALARM_TRIGGER);
-    this.addAlarm(AlarmTypeDto.LAST_GASP);
+    this.addTriggerType(PUSH_ALARM_TRIGGER, builder);
+    this.addAlarm(AlarmTypeDto.LAST_GASP, builder);
 
-    return this.builder.build();
+    return builder.build();
   }
 
   private DlmsPushNotification decodeMx382alarmUdp(final InputStream inputStream)
       throws UnrecognizedMessageDataException {
-    this.handleWpduHeaderBytes(inputStream, "WPDU-header");
-    this.checkByte(inputStream, EVENT_NOTIFICATION_REQUEST, "event-notification-request");
+    final DlmsPushNotification.Builder builder = new DlmsPushNotification.Builder();
+
+    this.handleWpduHeaderBytes(inputStream, "WPDU-header", builder);
+    this.checkByte(inputStream, EVENT_NOTIFICATION_REQUEST, "event-notification-request", builder);
 
     // Datetime is read and skipped
     this.handleDateTime(inputStream);
 
     // Get equipment identifier and add it to the new push notification
-    this.readEquipmentIdentifierAtEndOfMessage(inputStream);
+    this.readEquipmentIdentifierAtEndOfMessage(inputStream, builder);
     // Add alarmbits to the new push notification
-    this.addTriggerType(PUSH_SMS_TRIGGER);
+    this.addTriggerType(PUSH_SMS_TRIGGER, builder);
 
-    return this.builder.build();
+    return builder.build();
   }
 
   private void handleDateTime(final InputStream inputStream)
@@ -87,21 +91,23 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
     }
   }
 
-  private void handleEquipmentIdentifier(final InputStream inputStream)
+  private void handleEquipmentIdentifier(
+      final InputStream inputStream, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
 
     final byte dataType = this.readByte(inputStream);
-    this.builder.appendByte(dataType);
+    builder.appendByte(dataType);
     final byte length = this.readByte(inputStream);
-    this.builder.appendByte(length);
+    builder.appendByte(length);
 
     // Read the equipment identifier from incoming mx382 message
     final byte[] equipmentIdentifierBytes = this.readBytes(inputStream, length);
-    this.builder.withEquipmentIdentifier(
+    builder.withEquipmentIdentifier(
         new String(equipmentIdentifierBytes, StandardCharsets.US_ASCII));
   }
 
-  private void readEquipmentIdentifierAtEndOfMessage(final InputStream inputStream)
+  private void readEquipmentIdentifierAtEndOfMessage(
+      final InputStream inputStream, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
     try {
       this.readBytes(inputStream, inputStream.available() - 17);
@@ -110,35 +116,42 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
       final String equipmentIdentifier =
           new String(equipmentIdentifierBytes, StandardCharsets.US_ASCII).trim();
       if (equipmentIdentifier.matches("[a-zA-Z0-9]+")) {
-        this.builder.withEquipmentIdentifier(equipmentIdentifier);
+        builder.withEquipmentIdentifier(equipmentIdentifier);
       }
     } catch (final IOException io) {
       throw new UnrecognizedMessageDataException(io.getMessage(), io);
     }
   }
 
-  private void handleCosemAttributeDescriptor(final InputStream inputStream)
+  private void handleCosemAttributeDescriptor(
+      final InputStream inputStream, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
     // Check bytes of incoming mx382 message
-    this.checkBytes(inputStream, CLASS_ID_1, "class-id");
-    this.checkBytes(inputStream, AMM_FORWARDED_ALARM_VERSION_0, "logical name forwarded alarm");
-    this.checkByte(inputStream, ATTRIBUTE_ID_2, "attribute-id");
+    this.checkBytes(inputStream, CLASS_ID_1, "class-id", builder);
+    this.checkBytes(
+        inputStream, AMM_FORWARDED_ALARM_VERSION_0, "logical name forwarded alarm", builder);
+    this.checkByte(inputStream, ATTRIBUTE_ID_2, "attribute-id", builder);
   }
 
-  private void addTriggerType(final String triggerType) {
-    this.builder.withTriggerType(triggerType);
+  private void addTriggerType(
+      final String triggerType, final DlmsPushNotification.Builder builder) {
+    builder.withTriggerType(triggerType);
   }
 
-  private void addAlarm(final AlarmTypeDto alarmType) {
+  private void addAlarm(final AlarmTypeDto alarmType, final DlmsPushNotification.Builder builder) {
     final Set<AlarmTypeDto> alarmSet = new HashSet<>();
     alarmSet.add(alarmType);
-    this.builder.addAlarms(alarmSet);
+    builder.addAlarms(alarmSet);
   }
 
-  private void checkByte(final InputStream inputStream, final byte expectedByte, final String name)
+  private void checkByte(
+      final InputStream inputStream,
+      final byte expectedByte,
+      final String name,
+      final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
     final byte readByte = this.readByte(inputStream);
-    this.builder.appendByte(readByte);
+    builder.appendByte(readByte);
     if (readByte != expectedByte) {
       throw new UnrecognizedMessageDataException(
           String.format(
@@ -149,10 +162,11 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
     }
   }
 
-  private void handleWpduHeaderBytes(final InputStream inputStream, final String name)
+  private void handleWpduHeaderBytes(
+      final InputStream inputStream, final String name, final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
     final byte[] readBytes = this.readBytes(inputStream, WPDU_HEADER.length);
-    this.builder.appendBytes(readBytes);
+    builder.appendBytes(readBytes);
     if (!Arrays.equals(readBytes, WPDU_HEADER)) {
       throw new UnrecognizedMessageDataException(
           String.format(
@@ -163,7 +177,7 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
     }
 
     final byte[] apduLengthBytes = this.readBytes(inputStream, 2);
-    this.builder.appendBytes(apduLengthBytes);
+    builder.appendBytes(apduLengthBytes);
     final int adpuLength = new BigInteger(apduLengthBytes).intValue();
     if (adpuLength != 29 && adpuLength != 30 && adpuLength != 42 && adpuLength != 43) {
       throw new UnrecognizedMessageDataException(
@@ -173,10 +187,13 @@ public class Mx382AlarmDecoder extends AlarmDecoder {
   }
 
   private void checkBytes(
-      final InputStream inputStream, final byte[] expectedBytes, final String name)
+      final InputStream inputStream,
+      final byte[] expectedBytes,
+      final String name,
+      final DlmsPushNotification.Builder builder)
       throws UnrecognizedMessageDataException {
     final byte[] readBytes = this.readBytes(inputStream, expectedBytes.length);
-    this.builder.appendBytes(readBytes);
+    builder.appendBytes(readBytes);
     if (!Arrays.equals(readBytes, expectedBytes)) {
       throw new UnrecognizedMessageDataException(
           String.format(
