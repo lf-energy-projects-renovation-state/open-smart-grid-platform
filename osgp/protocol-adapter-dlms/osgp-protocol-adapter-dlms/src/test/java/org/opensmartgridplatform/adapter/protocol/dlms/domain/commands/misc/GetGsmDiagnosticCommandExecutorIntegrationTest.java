@@ -186,7 +186,7 @@ class GetGsmDiagnosticCommandExecutorIntegrationTest {
     final DlmsDevice device = new DlmsDevice();
     device.setDeviceIdentification("123456789012");
     device.setProtocol(protocol);
-    device.setCommunicationMethod(method.getMethodName());
+    device.setCommunicationMethod(method.name());
     return device;
   }
 
