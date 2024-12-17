@@ -120,7 +120,8 @@ SPDX-License-Identifier: Apache-2.0
     <jakarta.annotation.version>3.0.0</jakarta.annotation.version>
     <license.maven.plugin>3.0</license.maven.plugin>
     <jackson.version>2.15.3</jackson.version>
-    <cxf.version>4.0.5</cxf.version>
+    <cxf.version>4.0.3</cxf.version>
+    <cxf.core.version>4.0.5</cxf.core.version>
     <quartz.version>2.3.2</quartz.version>
     <hikaricp.version>3.4.5</hikaricp.version>
     <micrometer.version>1.13.1</micrometer.version>
@@ -631,11 +632,23 @@ SPDX-License-Identifier: Apache-2.0
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-rs-client</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+          </exclusion>
+        </exclusions>
         <version>${cxf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-transports-http</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+          </exclusion>
+        </exclusions>
         <version>${cxf.version}</version>
       </dependency>
       <dependency>
@@ -643,6 +656,10 @@ SPDX-License-Identifier: Apache-2.0
         <artifactId>cxf-rt-transports-http-hc</artifactId>
         <version>${cxf.version}</version>
         <exclusions>
+          <exclusion>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+          </exclusion>
           <exclusion>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore-nio</artifactId>
@@ -652,14 +669,31 @@ SPDX-License-Identifier: Apache-2.0
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-rs-extension-search</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+          </exclusion>
+        </exclusions>
         <version>${cxf.version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.cxf</groupId>
         <artifactId>cxf-rt-rs-extension-providers</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+          </exclusion>
+        </exclusions>
         <version>${cxf.version}</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-core</artifactId>
+        <version>${cxf.core.version}</version>
       </dependency>
 
       <!-- Jackson -->
