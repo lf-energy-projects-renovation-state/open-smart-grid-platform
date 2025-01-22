@@ -140,7 +140,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Build and push Docker image with file path
-        id: push
+        id: pushWithFile
         uses: docker/build-push-action@v6
         if: ${{ matrix.file != null }}
         with:
