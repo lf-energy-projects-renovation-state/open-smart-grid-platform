@@ -103,11 +103,14 @@ jobs:
           - image: ghcr.io/osgp/osgp-web-device-simulator
             context: ./osgp/protocol-adapter-oslp/web-device-simulator
           - image: ghcr.io/osgp/osgp-cucumber-tests-platform-common
-            context: ./integration-tests/cucumber-tests-platform-common
+            context: ./integration-tests
+            file: /cucumber-tests-platform-common/Dockerfile
           - image: ghcr.io/osgp/osgp-cucumber-tests-platform-publiclighting
-            context: ./integration-tests/cucumber-tests-platform-publiclighting
+            context: ./integration-tests
+            file: /cucumber-tests-platform-publiclighting/Dockerfile
           - image: ghcr.io/osgp/osgp-cucumber-tests-platform-smartmetering
-            context: ./integration-tests/cucumber-tests-platform-smartmetering
+            context: ./integration-tests
+            file: /cucumber-tests-platform-smartmetering/Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -130,8 +133,19 @@ jobs:
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
+        if: ${{ matrix.file == null }}
         with:
           context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push Docker image with file path
+        id: push
+        uses: docker/build-push-action@v6
+        if: ${{ matrix.file != null }}
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}${{ matrix.file }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
