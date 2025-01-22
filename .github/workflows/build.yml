@@ -151,6 +151,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
+        if: ${{ matrix.file == null }}
         with:
           subject-name: ${{ matrix.image }}
           subject-digest: ${{ steps.push.outputs.digest }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        if: ${{ matrix.file != null }}
+        with:
+          subject-name: ${{ matrix.image }}
+          subject-digest: ${{ steps.pushWithFile.outputs.digest }}
