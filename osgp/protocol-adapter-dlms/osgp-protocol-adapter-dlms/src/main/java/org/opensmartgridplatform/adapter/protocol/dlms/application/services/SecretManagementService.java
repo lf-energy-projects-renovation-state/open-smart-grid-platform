@@ -15,6 +15,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 import org.opensmartgridplatform.adapter.protocol.dlms.application.wsclient.SecretManagementClient;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.SecurityKeyType;
+import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.StoreNewKeyException;
 import org.opensmartgridplatform.shared.infra.jms.MessageMetadata;
 import org.opensmartgridplatform.shared.security.RsaEncrypter;
 import org.opensmartgridplatform.ws.schema.core.secret.management.ActivateSecretsRequest;
@@ -267,7 +268,7 @@ public class SecretManagementService {
     try {
       response = this.secretManagementClient.storeSecretsRequest(messageMetadata, request);
     } catch (final RuntimeException exc) {
-      throw new IllegalStateException("Could not store keys: unexpected exception occured", exc);
+      throw new StoreNewKeyException("Could not store keys: unexpected exception occured", exc);
     }
     if (response == null) {
       throw new IllegalStateException("Could not store keys: NULL response");
