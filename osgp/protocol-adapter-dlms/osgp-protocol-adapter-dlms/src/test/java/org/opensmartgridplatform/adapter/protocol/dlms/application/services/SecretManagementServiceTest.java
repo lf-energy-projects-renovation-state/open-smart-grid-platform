@@ -5,14 +5,13 @@
 package org.opensmartgridplatform.adapter.protocol.dlms.application.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +73,7 @@ class SecretManagementServiceTest {
 
   @Test
   void testGetKeys() {
-    final List<SecurityKeyType> keyTypes = Arrays.asList(KEY_TYPE);
+    final List<SecurityKeyType> keyTypes = List.of(KEY_TYPE);
     final GetSecretsResponse response = new GetSecretsResponse();
     response.setResult(OsgpResultType.OK);
     response.setTypedSecrets(new TypedSecrets());
@@ -117,17 +116,17 @@ class SecretManagementServiceTest {
     when(this.secretManagementClient.storeSecretsRequest(same(messageMetadata), any()))
         .thenThrow(new RuntimeException("Simulated exception"));
 
-    assertThrows(
-        StoreNewKeyException.class,
-        () -> {
-          this.secretManagementTestService.storeNewKeys(
-              messageMetadata, DEVICE_IDENTIFICATION, keys);
-        });
+    assertThatThrownBy(
+            () -> {
+              this.secretManagementTestService.storeNewKeys(
+                  messageMetadata, DEVICE_IDENTIFICATION, keys);
+            })
+        .isInstanceOf(StoreNewKeyException.class);
   }
 
   @Test
   void testActivateKeys() {
-    final List<SecurityKeyType> keyTypes = Arrays.asList(KEY_TYPE);
+    final List<SecurityKeyType> keyTypes = List.of(KEY_TYPE);
     final ArgumentCaptor<ActivateSecretsRequest> activateSecretsCaptor =
         ArgumentCaptor.forClass(ActivateSecretsRequest.class);
     // EXECUTE
@@ -144,7 +143,7 @@ class SecretManagementServiceTest {
 
   @Test
   void testGenerateAndStoreKeys() {
-    final List<SecurityKeyType> keyTypes = Arrays.asList(KEY_TYPE);
+    final List<SecurityKeyType> keyTypes = List.of(KEY_TYPE);
     final GenerateAndStoreSecretsResponse response = new GenerateAndStoreSecretsResponse();
     response.setResult(OsgpResultType.OK);
     response.setTypedSecrets(new TypedSecrets());
