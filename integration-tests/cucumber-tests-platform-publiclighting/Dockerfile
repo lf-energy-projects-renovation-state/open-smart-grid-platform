@@ -9,4 +9,4 @@ CMD java -javaagent:org.jacoco.agent-0.8.12-runtime.jar=destfile=/target/code-co
      -Dtimeout=30\
      -DskipITCoverage=false\
      -DrunHeadless=true\
-     -jar cucumber-*-test-jar-with-dependencies.jar -report /target/output
+     -jar cucumber-*-test-jar-with-dependencies.jar -report /target/output/osgp-cucumber-tests-platform-publiclighting
