@@ -28,6 +28,10 @@ import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.ScanMbusC
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.ScanMbusChannelsAsyncResponse;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.ScanMbusChannelsRequest;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.ScanMbusChannelsResponse;
+import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SetSpecificAttributeValueAsyncRequest;
+import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SetSpecificAttributeValueAsyncResponse;
+import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SetSpecificAttributeValueRequest;
+import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SetSpecificAttributeValueResponse;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SynchronizeTimeAsyncRequest;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SynchronizeTimeAsyncResponse;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SynchronizeTimeRequest;
@@ -313,6 +317,84 @@ public class SmartMeteringAdhocEndpoint extends SmartMeteringEndpoint {
         throw new TechnicalException(
             ComponentType.WS_SMART_METERING,
             "An exception occurred: Get specific attribute value",
+            null);
+      }
+    } catch (final Exception e) {
+      this.handleException(e);
+    }
+
+    return response;
+  }
+
+  @PayloadRoot(
+      localPart = "SetSpecificAttributeValueRequest",
+      namespace = SMARTMETER_ADHOC_NAMESPACE)
+  @ResponsePayload
+  public SetSpecificAttributeValueAsyncResponse setSpecificAttributeValue(
+      @OrganisationIdentification final String organisationIdentification,
+      @RequestPayload final SetSpecificAttributeValueRequest request,
+      @MessagePriority final String messagePriority,
+      @ScheduleTime final String scheduleTime,
+      @ResponseUrl final String responseUrl,
+      @BypassRetry final String bypassRetry)
+      throws OsgpException {
+
+    final org.opensmartgridplatform.domain.core.valueobjects.smartmetering
+            .SpecificAttributeValueRequest
+        setSpecificAttributeValueRequest =
+            this.adhocMapper.map(
+                request,
+                org.opensmartgridplatform.domain.core.valueobjects.smartmetering
+                    .SpecificAttributeValueRequest.class);
+
+    final RequestMessageMetadata requestMessageMetadata =
+        RequestMessageMetadata.newBuilder()
+            .withOrganisationIdentification(organisationIdentification)
+            .withDeviceIdentification(request.getDeviceIdentification())
+            .withDeviceFunction(DeviceFunction.GET_SPECIFIC_ATTRIBUTE_VALUE)
+            .withMessageType(MessageType.GET_SPECIFIC_ATTRIBUTE_VALUE)
+            .withMessagePriority(messagePriority)
+            .withScheduleTime(scheduleTime)
+            .withBypassRetry(bypassRetry)
+            .build();
+
+    final AsyncResponse asyncResponse =
+        this.requestService.enqueueAndSendRequest(
+            requestMessageMetadata, setSpecificAttributeValueRequest);
+
+    this.saveResponseUrlIfNeeded(asyncResponse.getCorrelationUid(), responseUrl);
+
+    return this.adhocMapper.map(asyncResponse, SetSpecificAttributeValueAsyncResponse.class);
+  }
+
+  @PayloadRoot(
+      localPart = "SetSpecificAttributeValueAsyncRequest",
+      namespace = SMARTMETER_ADHOC_NAMESPACE)
+  @ResponsePayload
+  public SetSpecificAttributeValueResponse setSpecificAttributeValueResponse(
+      @RequestPayload final SetSpecificAttributeValueAsyncRequest request) throws OsgpException {
+
+    SetSpecificAttributeValueResponse response = null;
+    try {
+      response = new SetSpecificAttributeValueResponse();
+      final ResponseData responseData =
+          this.responseDataService.get(
+              request.getCorrelationUid(), ComponentType.WS_SMART_METERING);
+
+      response.setResult(OsgpResultType.fromValue(responseData.getResultType().getValue()));
+      if (ResponseMessageResultType.OK == responseData.getResultType()) {
+        response.setAttributeValueData((String) responseData.getMessageData());
+      } else if (responseData.getMessageData() instanceof OsgpException) {
+        throw (OsgpException) responseData.getMessageData();
+      } else if (responseData.getMessageData() instanceof Exception) {
+        throw new TechnicalException(
+            ComponentType.WS_SMART_METERING,
+            "An exception occurred: Set specific attribute value",
+            (Exception) responseData.getMessageData());
+      } else {
+        throw new TechnicalException(
+            ComponentType.WS_SMART_METERING,
+            "An exception occurred: Set specific attribute value",
             null);
       }
     } catch (final Exception e) {
