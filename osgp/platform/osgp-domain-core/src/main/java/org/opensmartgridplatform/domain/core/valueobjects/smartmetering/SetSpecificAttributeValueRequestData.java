@@ -12,24 +12,24 @@ public class SetSpecificAttributeValueRequestData implements Serializable, Actio
 
   private static final long serialVersionUID = -7326169764207317011L;
 
-  private final String dlmsObjectTag;
-  private final int attributeId;
+  private final String objectType;
+  private final int attribute;
   private final int intValue;
 
   public SetSpecificAttributeValueRequestData(
-      final String dlmsObjectType, final int attributeId, final int intValue) {
+      final String objectType, final int attribute, final int intValue) {
     super();
-    this.dlmsObjectTag = dlmsObjectType;
-    this.attributeId = attributeId;
+    this.objectType = objectType;
+    this.attribute = attribute;
     this.intValue = intValue;
   }
 
-  public String getDlmsObjectTag() {
-    return this.dlmsObjectTag;
+  public String getObjectType() {
+    return this.objectType;
   }
 
-  public int getAttributeId() {
-    return this.attributeId;
+  public int getAttribute() {
+    return this.attribute;
   }
 
   public int getIntValue() {
@@ -45,9 +45,9 @@ public class SetSpecificAttributeValueRequestData implements Serializable, Actio
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = (prime * result) + this.attributeId;
+    result = (prime * result) + this.attribute;
     result = (prime * result) + this.intValue;
-    result = (prime * result) + this.dlmsObjectTag.hashCode();
+    result = (prime * result) + this.objectType.hashCode();
     return result;
   }
 
@@ -63,17 +63,17 @@ public class SetSpecificAttributeValueRequestData implements Serializable, Actio
       return false;
     }
     final SetSpecificAttributeValueRequestData other = (SetSpecificAttributeValueRequestData) obj;
-    if (this.attributeId != other.attributeId) {
+    if (this.attribute != other.attribute) {
       return false;
     }
     if (this.intValue != other.intValue) {
       return false;
     }
-    if (this.dlmsObjectTag == null) {
-      if (other.dlmsObjectTag != null) {
+    if (this.objectType == null) {
+      if (other.objectType != null) {
         return false;
       }
-    } else if (!this.dlmsObjectTag.equals(other.dlmsObjectTag)) {
+    } else if (!this.objectType.equals(other.objectType)) {
       return false;
     }
     return true;

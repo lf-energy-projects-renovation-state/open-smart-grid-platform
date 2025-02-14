@@ -264,7 +264,7 @@ public class AdhocService {
 
     final SetSpecificAttributeValueRequestDto requestDto =
         new SetSpecificAttributeValueRequestDto(
-            request.getDlmsObjectTag(), request.getAttributeId(), request.getIntValue());
+            request.getObjectType(), request.getAttribute(), request.getIntValue());
 
     this.osgpCoreRequestMessageSender.send(
         requestDto,

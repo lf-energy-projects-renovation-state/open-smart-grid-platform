@@ -39,7 +39,9 @@ public class SetSpecificAttributeValueResponseMessageProcessor
 
   @Override
   protected boolean hasRegularResponseObject(final ResponseMessage responseMessage) {
-    return responseMessage.getDataObject() instanceof String;
+    // Only the Result (OK/NOK/Exception) is returned, no need to check the (contents of the
+    // dataObject).
+    return true;
   }
 
   @Override

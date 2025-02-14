@@ -57,7 +57,7 @@ public class SetSpecificAttributeValueCommandExecutor
       final MessageMetadata messageMetadata)
       throws FunctionalException, ProtocolAdapterException {
 
-    final DlmsObjectType objectType = DlmsObjectType.valueOf(requestData.getDlmsObjectTag());
+    final DlmsObjectType objectType = DlmsObjectType.valueOf(requestData.getObjectType());
     final CosemObject cosemObject;
     try {
       cosemObject =
@@ -67,7 +67,7 @@ public class SetSpecificAttributeValueCommandExecutor
       throw new ProtocolAdapterException(AbstractCommandExecutor.ERROR_IN_OBJECT_CONFIG, e);
     }
 
-    final Attribute attribute = cosemObject.getAttribute(requestData.getAttributeId());
+    final Attribute attribute = cosemObject.getAttribute(requestData.getAttribute());
 
     final DlmsDataType dataType = attribute.getDatatype();
 
@@ -90,22 +90,22 @@ public class SetSpecificAttributeValueCommandExecutor
         new AttributeAddress(
             cosemObject.getClassId(),
             new ObisCode(cosemObject.getObis()),
-            requestData.getAttributeId());
+            requestData.getAttribute());
     final SetParameter setParameter = new SetParameter(attributeAddress, data);
 
     log.debug(
         "Set specific attribute value, class id: {}, obis code: {}, attribute id: {}, value: {}",
         cosemObject.getClassId(),
         cosemObject.getObis(),
-        requestData.getAttributeId(),
+        requestData.getAttribute(),
         requestData.getIntValue());
 
     final List<AccessResultCode> resultCodes =
         this.dlmsHelper.setWithList(conn, device, List.of(setParameter));
 
     if (!resultCodes.stream().allMatch(code -> code.equals(AccessResultCode.SUCCESS))) {
-      log.debug("Result of THD configuration is {}", resultCodes);
-      throw new ProtocolAdapterException("THD configuration resulted in: " + resultCodes);
+      log.debug("Result of Set specific value is {}", resultCodes);
+      throw new ProtocolAdapterException("Set specific value resulted in: " + resultCodes);
     }
 
     return null;

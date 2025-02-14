@@ -579,7 +579,7 @@
     <xsd:complexType>
       <xsd:complexContent>
         <xsd:extension
-          base="adhoc:GetSpecificAttributeValueResponseData" />
+          base="adhoc:SetSpecificAttributeValueResponseData" />
       </xsd:complexContent>
     </xsd:complexType>
   </xsd:element>

@@ -11,7 +11,6 @@ import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.DlmsConn
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
 import org.opensmartgridplatform.adapter.protocol.dlms.infra.messaging.DeviceRequestMessageProcessor;
 import org.opensmartgridplatform.dto.valueobjects.smartmetering.SetSpecificAttributeValueRequestDto;
-import org.opensmartgridplatform.dto.valueobjects.smartmetering.SpecificAttributeValueRequestDto;
 import org.opensmartgridplatform.shared.exceptionhandling.FunctionalException;
 import org.opensmartgridplatform.shared.infra.jms.MessageMetadata;
 import org.opensmartgridplatform.shared.infra.jms.MessageType;
@@ -24,7 +23,7 @@ public class SetSpecificAttributeValueRequestMessageProcessor
   private final AdhocService adhocService;
 
   protected SetSpecificAttributeValueRequestMessageProcessor(final AdhocService adhocService) {
-    super(MessageType.GET_SPECIFIC_ATTRIBUTE_VALUE);
+    super(MessageType.SET_SPECIFIC_ATTRIBUTE_VALUE);
     this.adhocService = adhocService;
   }
 
@@ -36,7 +35,7 @@ public class SetSpecificAttributeValueRequestMessageProcessor
       final MessageMetadata messageMetadata)
       throws ProtocolAdapterException, FunctionalException {
 
-    this.assertRequestObjectType(SpecificAttributeValueRequestDto.class, requestObject);
+    this.assertRequestObjectType(SetSpecificAttributeValueRequestDto.class, requestObject);
 
     final SetSpecificAttributeValueRequestDto request =
         (SetSpecificAttributeValueRequestDto) requestObject;

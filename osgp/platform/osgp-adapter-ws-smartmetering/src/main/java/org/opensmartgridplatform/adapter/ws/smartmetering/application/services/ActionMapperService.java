@@ -239,7 +239,7 @@ public class ActionMapperService {
     CLASS_MAP.put(
         org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc
             .SetSpecificAttributeValueRequestData.class,
-        SpecificAttributeValueRequestData.class);
+        SetSpecificAttributeValueRequestData.class);
     CLASS_MAP.put(
         org.opensmartgridplatform.adapter.ws.schema.smartmetering.configuration
             .SetClockConfigurationRequestData.class,

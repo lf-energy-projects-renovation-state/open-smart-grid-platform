@@ -235,9 +235,6 @@
     <xsd:complexType>
       <xsd:complexContent>
         <xsd:extension base="common:Response">
-          <xsd:sequence>
-            <xsd:element name="AttributeValueData" type="xsd:string" />
-          </xsd:sequence>
         </xsd:extension>
       </xsd:complexContent>
     </xsd:complexType>
@@ -247,7 +244,7 @@
       <xsd:extension base="common:Query">
         <xsd:sequence>
           <xsd:element name="ObjectType" type="tns:ObjectType" />
-          <xsd:element name="AttributeId" type="xsd:integer" />
+          <xsd:element name="Attribute" type="xsd:integer" />
           <xsd:element name="IntValue" type="xsd:integer" />
         </xsd:sequence>
       </xsd:extension>

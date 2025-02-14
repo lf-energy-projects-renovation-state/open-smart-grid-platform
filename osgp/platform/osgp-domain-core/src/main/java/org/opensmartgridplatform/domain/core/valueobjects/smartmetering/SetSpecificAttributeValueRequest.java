@@ -11,11 +11,11 @@ public class SetSpecificAttributeValueRequest extends SetSpecificAttributeValueR
   private final String deviceIdentification;
 
   public SetSpecificAttributeValueRequest(
-      final String dlmsObjectTag,
-      final int attributeId,
+      final String objectType,
+      final int attribute,
       final int intValue,
       final String deviceIdentification) {
-    super(dlmsObjectTag, attributeId, intValue);
+    super(objectType, attribute, intValue);
     this.deviceIdentification = deviceIdentification;
   }
 
