@@ -18,15 +18,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class SetSpecificAttributeValueRequestMessageProcessor extends BaseRequestMessageProcessor {
 
-  @Autowired
-  @Qualifier("domainSmartMeteringAdhocService")
-  private AdhocService adhocService;
+  private final AdhocService adhocService;
 
   @Autowired
   protected SetSpecificAttributeValueRequestMessageProcessor(
       @Qualifier("domainSmartMeteringInboundWebServiceRequestsMessageProcessorMap")
-          final MessageProcessorMap messageProcessorMap) {
+          final MessageProcessorMap messageProcessorMap,
+      @Qualifier("domainSmartMeteringAdhocService") final AdhocService adhocService) {
     super(messageProcessorMap, MessageType.SET_SPECIFIC_ATTRIBUTE_VALUE);
+    this.adhocService = adhocService;
   }
 
   @Override

@@ -21,20 +21,20 @@ import org.springframework.stereotype.Component;
 public class SetSpecificAttributeValueResponseMessageProcessor
     extends OsgpCoreResponseMessageProcessor {
 
-  @Autowired
-  @Qualifier("domainSmartMeteringAdhocService")
-  private AdhocService adhocService;
+  private final AdhocService adhocService;
 
   @Autowired
   public SetSpecificAttributeValueResponseMessageProcessor(
       final WebServiceResponseMessageSender responseMessageSender,
       @Qualifier("domainSmartMeteringInboundOsgpCoreResponsesMessageProcessorMap")
-          final MessageProcessorMap messageProcessorMap) {
+          final MessageProcessorMap messageProcessorMap,
+      @Qualifier("domainSmartMeteringAdhocService") final AdhocService adhocService) {
     super(
         responseMessageSender,
         messageProcessorMap,
         MessageType.SET_SPECIFIC_ATTRIBUTE_VALUE,
         ComponentType.DOMAIN_SMART_METERING);
+    this.adhocService = adhocService;
   }
 
   @Override
