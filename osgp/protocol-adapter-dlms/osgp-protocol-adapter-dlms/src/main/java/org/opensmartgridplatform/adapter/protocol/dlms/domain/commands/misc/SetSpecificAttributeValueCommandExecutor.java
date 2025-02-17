@@ -4,17 +4,17 @@
 
 package org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.misc;
 
-import java.util.List;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import org.openmuc.jdlms.AccessResultCode;
 import org.openmuc.jdlms.AttributeAddress;
 import org.openmuc.jdlms.ObisCode;
 import org.openmuc.jdlms.SetParameter;
 import org.openmuc.jdlms.datatypes.DataObject;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.AbstractCommandExecutor;
-import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.DlmsHelper;
+import org.opensmartgridplatform.adapter.protocol.dlms.domain.commands.utils.JdlmsObjectToStringUtil;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.entities.DlmsDevice;
 import org.opensmartgridplatform.adapter.protocol.dlms.domain.factories.DlmsConnectionManager;
+import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ConnectionException;
 import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.ProtocolAdapterException;
 import org.opensmartgridplatform.dlms.exceptions.ObjectConfigException;
 import org.opensmartgridplatform.dlms.objectconfig.Attribute;
@@ -33,14 +33,11 @@ import org.springframework.stereotype.Component;
 public class SetSpecificAttributeValueCommandExecutor
     extends AbstractCommandExecutor<SetSpecificAttributeValueRequestDto, Void> {
 
-  private final DlmsHelper dlmsHelper;
   private final ObjectConfigService objectConfigService;
 
-  public SetSpecificAttributeValueCommandExecutor(
-      final DlmsHelper dlmsHelper, final ObjectConfigService objectConfigService) {
+  public SetSpecificAttributeValueCommandExecutor(final ObjectConfigService objectConfigService) {
     super(SetSpecificAttributeValueRequestDto.class);
     this.objectConfigService = objectConfigService;
-    this.dlmsHelper = dlmsHelper;
   }
 
   @Override
@@ -93,6 +90,13 @@ public class SetSpecificAttributeValueCommandExecutor
             requestData.getAttribute());
     final SetParameter setParameter = new SetParameter(attributeAddress, data);
 
+    conn.getDlmsMessageListener()
+        .setDescription(
+            "Setting value in "
+                + requestData.getObjectType()
+                + ", set attribute: "
+                + JdlmsObjectToStringUtil.describeAttributes(attributeAddress));
+
     log.debug(
         "Set specific attribute value, class id: {}, obis code: {}, attribute id: {}, value: {}",
         cosemObject.getClassId(),
@@ -100,12 +104,10 @@ public class SetSpecificAttributeValueCommandExecutor
         requestData.getAttribute(),
         requestData.getIntValue());
 
-    final List<AccessResultCode> resultCodes =
-        this.dlmsHelper.setWithList(conn, device, List.of(setParameter));
-
-    if (!resultCodes.stream().allMatch(code -> code.equals(AccessResultCode.SUCCESS))) {
-      log.debug("Result of Set specific value is {}", resultCodes);
-      throw new ProtocolAdapterException("Set specific value resulted in: " + resultCodes);
+    try {
+      conn.getConnection().set(setParameter);
+    } catch (final IOException e) {
+      throw new ConnectionException(e);
     }
 
     return null;
