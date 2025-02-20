@@ -53,7 +53,7 @@ class SetSpecificAttributeValueCommandExecutorTest {
   private static final int VALUE = 25;
 
   @BeforeEach
-  public void setUp() throws IOException, ObjectConfigException {
+  void setUp() throws IOException, ObjectConfigException {
     final ObjectConfigService objectConfigService = new ObjectConfigService();
     this.executor = new SetSpecificAttributeValueCommandExecutor(objectConfigService);
   }
