@@ -6,7 +6,7 @@ package org.opensmartgridplatform.cucumber.platform.smartmetering.support.ws.sma
 
 import java.math.BigInteger;
 import java.util.Map;
-import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.ObjectType;
+import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.AllowedObjectType;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SetSpecificAttributeValueAsyncRequest;
 import org.opensmartgridplatform.adapter.ws.schema.smartmetering.adhoc.SetSpecificAttributeValueRequest;
 import org.opensmartgridplatform.cucumber.platform.smartmetering.PlatformSmartmeteringKeys;
@@ -24,7 +24,7 @@ public class SetSpecificAttributeValueRequestFactory {
     request.setDeviceIdentification(
         parameters.get(PlatformSmartmeteringKeys.DEVICE_IDENTIFICATION));
     request.setObjectType(
-        ObjectType.valueOf(parameters.get(PlatformSmartmeteringKeys.OBJECT_TYPE)));
+        AllowedObjectType.valueOf(parameters.get(PlatformSmartmeteringKeys.OBJECT_TYPE)));
     request.setAttribute(new BigInteger(parameters.get(PlatformSmartmeteringKeys.ATTRIBUTE)));
     request.setIntValue(new BigInteger(parameters.get(PlatformSmartmeteringKeys.INT_VALUE)));
     return request;

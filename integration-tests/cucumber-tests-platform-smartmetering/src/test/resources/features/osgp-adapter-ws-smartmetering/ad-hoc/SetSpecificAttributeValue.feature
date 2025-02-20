@@ -14,12 +14,12 @@ Feature: SmartMetering AdHoc
       | DeviceType           | SMART_METER_E          |
       | Protocol             | <protocol>             |
       | ProtocolVersion      | <version>              |
-    When the Set Specific Attribute value request is received
+    When the Set Specific Attribute Value request is received
       | DeviceIdentification | <deviceIdentification> |
       | ObjectType           | WATCHDOG_TIMER         |
       | Attribute            | 2                      |
       | IntValue             | 42                     |
-    Then the Set Specific Attribute value response should be returned
+    Then the Set Specific Attribute Value response should be returned
       | DeviceIdentification | <deviceIdentification> |
       | Result               | <response>             |
 

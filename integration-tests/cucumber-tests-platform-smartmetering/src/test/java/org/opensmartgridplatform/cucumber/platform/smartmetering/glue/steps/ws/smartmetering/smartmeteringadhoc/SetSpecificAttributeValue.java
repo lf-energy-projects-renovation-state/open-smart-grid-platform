@@ -33,7 +33,7 @@ public class SetSpecificAttributeValue {
           SetSpecificAttributeValueResponse, SetSpecificAttributeValueAsyncRequest>
       responseClient;
 
-  @When("^the Set Specific Attribute value request is received$")
+  @When("^the Set Specific Attribute Value request is received$")
   public void whenTheSetSpecificAttributeValueRequestIsReceived(final Map<String, String> settings)
       throws Throwable {
 
@@ -47,7 +47,7 @@ public class SetSpecificAttributeValue {
         .put(PlatformKeys.KEY_CORRELATION_UID, asyncResponse.getCorrelationUid());
   }
 
-  @Then("^the Set Specific Attribute value response should be returned$")
+  @Then("^the Set Specific Attribute Value response should be returned$")
   public void thenTheValueShouldBeSetOnTheDevice(final Map<String, String> settings)
       throws Throwable {
 
