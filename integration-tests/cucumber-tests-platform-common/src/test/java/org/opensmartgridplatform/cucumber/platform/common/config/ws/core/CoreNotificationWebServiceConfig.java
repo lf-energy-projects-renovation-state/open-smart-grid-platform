@@ -53,6 +53,9 @@ public class CoreNotificationWebServiceConfig extends WsConfigurerAdapter {
   @Value("${web.service.core.notification.port}")
   private int notificationPort;
 
+  @Value("${web.service.core.notification.address}")
+  private String notificationAddress;
+
   @Bean("wsCoreNotificationApplicationName")
   public String notificationApplicationName() {
     return this.notificationApplicationName;
@@ -65,7 +68,11 @@ public class CoreNotificationWebServiceConfig extends WsConfigurerAdapter {
 
   @Bean("wsCoreNotificationTargetUri")
   public String notificationTargetUri() {
-    return "http://localhost:" + this.notificationPort + this.notificationContextPath;
+    return "http://"
+        + this.notificationAddress
+        + ":"
+        + this.notificationPort
+        + this.notificationContextPath;
   }
 
   @Override
@@ -82,9 +89,7 @@ public class CoreNotificationWebServiceConfig extends WsConfigurerAdapter {
       throws IOException {
 
     LOGGER.info(
-        "Initializing core notifications HTTP server with context path: '{}' and port: '{}'",
-        this.notificationContextPath,
-        this.notificationPort);
+        "Initializing core notifications HTTP server with uri: '{}'", this.notificationTargetUri());
 
     final SoapMessageDispatcher soapMessageDispatcher = new SoapMessageDispatcher();
     soapMessageDispatcher.setEndpointMappings(Collections.singletonList(mapping));

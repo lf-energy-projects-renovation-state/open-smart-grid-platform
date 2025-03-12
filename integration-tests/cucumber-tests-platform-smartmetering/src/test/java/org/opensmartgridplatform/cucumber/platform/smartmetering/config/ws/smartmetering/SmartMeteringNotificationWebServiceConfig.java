@@ -53,6 +53,9 @@ public class SmartMeteringNotificationWebServiceConfig extends WsConfigurerAdapt
   @Value("${web.service.smartmetering.notification.port}")
   private int notificationPort;
 
+  @Value("${web.service.smartmetering.notification.address}")
+  private String notificationAddress;
+
   @Bean("wsSmartMeteringNotificationApplicationName")
   public String notificationApplicationName() {
     return this.notificationApplicationName;
@@ -65,7 +68,11 @@ public class SmartMeteringNotificationWebServiceConfig extends WsConfigurerAdapt
 
   @Bean("wsSmartMeteringNotificationTargetUri")
   public String notificationTargetUri() {
-    return "http://localhost:" + this.notificationPort + this.notificationContextPath;
+    return "http://"
+        + this.notificationAddress
+        + ":"
+        + this.notificationPort
+        + this.notificationContextPath;
   }
 
   @Override
@@ -82,9 +89,7 @@ public class SmartMeteringNotificationWebServiceConfig extends WsConfigurerAdapt
       throws IOException {
 
     LOGGER.info(
-        "Initializing smart metering notifications HTTP server with context path: '{}' and port: '{}'",
-        this.notificationContextPath,
-        this.notificationPort);
+        "Initializing core notifications HTTP server with uri: '{}'", this.notificationTargetUri());
 
     final SoapMessageDispatcher soapMessageDispatcher = new SoapMessageDispatcher();
     soapMessageDispatcher.setEndpointMappings(Arrays.asList(mapping));
