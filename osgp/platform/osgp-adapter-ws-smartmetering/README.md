@@ -69,7 +69,7 @@ sequenceDiagram
 
 1. The user application sends a SOAP request to an endpoint. The request should be in the format as defined in the [message specification](#endpoint-and-message-specification).
 2. The user application immediately receives a response containing the `correlation-uid`.
-3. The request is translated to the internal format (see the [mappers](#mappers)) and asynchronously forwarded to [domain smartmetering](#domain-smartmetering)
+3. The request is translated to the internal format (see the [mappers](#mappers)) and asynchronously forwarded to [domain smartmetering](#domain-smartmetering).
 4. After some time (depending on the request and the connection to the device), a response is received.
 5. The [NotificationService](#notificationservice) sends a notification with the correlationUid to the user application.
 6. The user application can then request the result of the request, based on the correlationUid.
@@ -117,5 +117,5 @@ The notification service is located in `osgp-adapter-ws-shared` package:
 
 [Readme of domain-smartmetering](../osgp-adapter-domain-smartmetering/README.md)
 
-Requests send to domain-smartmetering, are received by the
+Requests sent to domain-smartmetering, are received by the
 [Message processors](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/infra/jms/ws/messageprocessors) and then handled by the corresponding [Services](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/services).

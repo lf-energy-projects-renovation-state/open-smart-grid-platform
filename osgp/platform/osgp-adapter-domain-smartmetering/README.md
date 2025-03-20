@@ -49,7 +49,7 @@ The task of the message processor is to call the right function in the right ser
 
 ### Services
 
-The [services](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/services) convert a request to a DTOs. The DTOs is sent to core. The conversion is done by mappers. The services also handle the responses coming from core.
+The [services](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/services) convert a request to a DTO. The DTO is sent to core. The conversion is done by mappers. The services also handle the responses coming from core.
 
 Requests are grouped based on their function:
 - Adhoc service
