@@ -62,12 +62,17 @@ Bundle requests are handled by the [BundleService](../osgp-adapter-domain-smartm
 
 ### Mappers
 
-To convert between the internal messages and the DTO objects, Orika mappers are used.
+To convert between the internal messages and the [DTO objects](#dto-objects), Orika mappers are used.
 
 For single requests, the services call the mappers directly. For example: The `ConfigurationService` calls the `ConfigurationMapper`. These mappers can be found here: [Mappers](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/mapping). Most request and response types are converted automatically, because the internal type and the DTO have the same fields. For some types, specific [converters](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/mapping/customconverters) are needed.
 
 For bundle requests, the bundle endpoint uses the [ActionMapperService](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/services/ActionMapperService.java) and the [ActionMapperResponseService](../osgp-adapter-domain-smartmetering/src/main/java/org/opensmartgridplatform/adapter/domain/smartmetering/application/services/ActionMapperResponseService.java) to translate all requests and response in the bundle.
 
+### DTO objects
+
+The DTO objects for smartmetering are located in the [smartmetering](../../shared/osgp-dto/src/main/java/org/opensmartgridplatform/dto/valueobjects/smartmetering) package in osgp-dto.
+
+For each function, a type should also be included in [NotificationTypeDto](../../shared/osgp-dto/src/main/java/org/opensmartgridplatform/dto/valueobjects/smartmetering/NotificationTypeDto.java).
 
 ### Adapter ws smartmetering
 
@@ -83,6 +88,7 @@ Requests received from ws smartmetering, are sent by the
 [Main folder core](../osgp-core)
 
 The main task of core is to send the request to the correct protocol adapter. For smart metering, core forwards the DTO request to the DLMS protocol adapter. Since no conversion of the DTO is done, core doesn't have smart metering specific mappers or services.
+
 
 ### DLMS Protocol adapter
 

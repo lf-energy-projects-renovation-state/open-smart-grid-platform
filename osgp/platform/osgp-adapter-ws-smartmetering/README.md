@@ -94,11 +94,17 @@ Based on the schema definitions, source code is generated in the following locat
 
 ### Mappers
 
-To convert between the external messages (as defined in the wsdl and xsd files) and the internal objects, Orika mappers are used.
+To convert between the external messages (as defined in the wsdl and xsd files) and the [internal objects](#internal-smart-metering-objects), Orika mappers are used.
 
 For single requests, the endpoints call the mappers directly. For example: The `SmartMeteringAdhocEndpoint` calls the `AdhocMapper`. These mappers can be found here: [Mappers](src/main/java/org/opensmartgridplatform/adapter/ws/smartmetering/application/mapping)
 
 For bundle requests, the bundle endpoint uses the [ActionMapperService](src/main/java/org/opensmartgridplatform/adapter/ws/smartmetering/application/services/ActionMapperService.java) and the [ActionMapperResponseService](src/main/java/org/opensmartgridplatform/adapter/ws/smartmetering/application/services/ActionMapperResponseService.java) to translate all requests and response in the bundle.
+
+### Internal smart metering objects
+
+For each request, response or other smartmetering related object, a class should be availabe in the [smartmetering](../osgp-domain-core/src/main/java/org/opensmartgridplatform/domain/core/valueobjects/smartmetering) package in osgp-domain-core.
+
+Each function should be included in the [DeviceFunction](../osgp-domain-core/src/main/java/org/opensmartgridplatform/domain/core/valueobjects/DeviceFunction.java) enum in osgp-domain-core.
 
 ### NotificationService
 
