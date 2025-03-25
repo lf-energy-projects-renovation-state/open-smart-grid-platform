@@ -147,9 +147,9 @@ public class GetPeriodicMeterReadsCommandExecutor
           logTime = this.readClock(periodType, previousLogTime, intervalTime, bufferedObject);
         }
         case AMR_PROFILE_STATUS,
-                AMR_PROFILE_STATUS_15MIN_E,
-                AMR_PROFILE_STATUS_DAILY_E,
-                AMR_PROFILE_STATUS_MONTHLY_E ->
+            AMR_PROFILE_STATUS_15MIN_E,
+            AMR_PROFILE_STATUS_DAILY_E,
+            AMR_PROFILE_STATUS_MONTHLY_E ->
             // The status is used in most profiles. But for some it is not used. In that case, the
             // selectedObjects will not contain a status object and readStatus will return null.
             status = this.readAmrProfileStatusCode(bufferedObject);
@@ -166,6 +166,10 @@ public class GetPeriodicMeterReadsCommandExecutor
             activeEnergyExportRate1 = this.getValue(selectedObject, bufferedObject);
         case ACTIVE_ENERGY_EXPORT_RATE_2 ->
             activeEnergyExportRate2 = this.getValue(selectedObject, bufferedObject);
+        case MBUS_MASTER_VALUE -> {
+          // Do nothing. Special case for DSMR4.2.2 devices where E-meter and G-meter readings
+          // are combined in one profile. G-meter readings are ignored.
+        }
         default ->
             log.error(
                 "Unexpected objectType in selectedObjects: "

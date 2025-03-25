@@ -149,9 +149,9 @@ public class GetPeriodicMeterReadsGasCommandExecutor
           logTime = this.readClock(periodType, previousLogTime, intervalTime, bufferedObject);
         }
         case AMR_PROFILE_STATUS,
-                AMR_PROFILE_STATUS_HOURLY_G,
-                AMR_PROFILE_STATUS_DAILY_G,
-                AMR_PROFILE_STATUS_MONTHLY_G ->
+            AMR_PROFILE_STATUS_HOURLY_G,
+            AMR_PROFILE_STATUS_DAILY_G,
+            AMR_PROFILE_STATUS_MONTHLY_G ->
             // The status is used in most profiles. But for some it is not used. In that case, the
             // selectedObjects will not contain a status object and readStatus will return null.
             status = this.readAmrProfileStatusCode(bufferedObject);
@@ -179,6 +179,15 @@ public class GetPeriodicMeterReadsGasCommandExecutor
                       bufferedObject, previousCaptureTime, periodType, intervalTime);
             }
           }
+        }
+        case ACTIVE_ENERGY_IMPORT,
+            ACTIVE_ENERGY_EXPORT,
+            ACTIVE_ENERGY_IMPORT_RATE_1,
+            ACTIVE_ENERGY_IMPORT_RATE_2,
+            ACTIVE_ENERGY_EXPORT_RATE_1,
+            ACTIVE_ENERGY_EXPORT_RATE_2 -> {
+          // Do nothing. Special case for DSMR4.2.2 devices where E-meter and G-meter readings
+          // are combined in one profile. E-meter readings are ignored.
         }
         default ->
             log.error(
