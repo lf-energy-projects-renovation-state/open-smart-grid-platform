@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings({"java:S1181", "java:S2139"})
 @Component(value = "protocolDlmsInboundOsgpCoreRequestsMessageListener")
 public class DeviceRequestMessageListener implements MessageListener {
 
@@ -38,7 +39,16 @@ public class DeviceRequestMessageListener implements MessageListener {
       processor.processMessage(objectMessage);
 
     } catch (final JMSException ex) {
-      LOGGER.error("Exception: {} ", ex.getMessage(), ex);
+      LOGGER.error(
+          "Exception in DeviceRequestMessageListener (osgp-protocol-adapter-dlms): {} ",
+          ex.getMessage(),
+          ex);
+    } catch (final Exception t) {
+      LOGGER.error(
+          "Throwable in DeviceRequestMessageListener (osgp-protocol-adapter-dlms): {} ",
+          t.getMessage(),
+          t);
+      throw t;
     }
   }
 }
