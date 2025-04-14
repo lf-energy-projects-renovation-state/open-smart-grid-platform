@@ -163,6 +163,9 @@ jobs:
     needs: docker
     permissions:
       checks: write
+    strategy:
+      matrix:
+          values_file: [ci/common-values.yaml, ci/publiclighting-values.yaml]
     steps:
       - name: Checkout gxf-gitops
         uses: actions/checkout@v4
@@ -173,7 +176,7 @@ jobs:
       - name: Create gxf platform
         run: ./charts/gxf-platform/template-apply.sh --imageTag $(echo -e "${{ needs.docker.outputs.tags }}" | head -n 1 | cut -d':' -f2)
       - name: Create and run gxf cucumber tests
-        run: ./charts/gxf-cucumber-tests/template-apply.sh --imageTag $(echo -e "${{ needs.docker.outputs.tags }}" | head -n 1 | cut -d':' -f2) --valuesFile ci/common-values.yaml
+        run: ./charts/gxf-cucumber-tests/template-apply.sh --imageTag $(echo -e "${{ needs.docker.outputs.tags }}" | head -n 1 | cut -d':' -f2) --valuesFile ${{ matrix.values_file }}
       - name: Wait for jobs to finish
         run: kubectl wait --for=condition=complete --all jobs --timeout=30m
       - name: Run maven cucumber reporting
