@@ -190,7 +190,9 @@ public class LoadProfileWithPeriod2 extends ProfileGeneric {
 
     for (int i = 0; i < PROFILE_ENTRIES; i++) {
       if (i == 0) {
-        amrProfileStatusCode = 4;
+        amrProfileStatusCode = 4; // DATA_NOT_VALID
+      } else {
+        amrProfileStatusCode = 0;
       }
       importRate1 += 1;
       importRate2 += 2;

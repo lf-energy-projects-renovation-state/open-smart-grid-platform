@@ -143,7 +143,9 @@ public class LoadProfileWithPeriod1 extends ProfileGeneric {
 
     for (int i = 0; i < PROFILE_ENTRIES; i++) {
       if (i == 0) {
-        amrProfileStatusCode = 4;
+        amrProfileStatusCode = 4; // DATA_NOT_VALID
+      } else {
+        amrProfileStatusCode = 0;
       }
       final Calendar cal = this.getNextDateTime();
       importValue += 1;
