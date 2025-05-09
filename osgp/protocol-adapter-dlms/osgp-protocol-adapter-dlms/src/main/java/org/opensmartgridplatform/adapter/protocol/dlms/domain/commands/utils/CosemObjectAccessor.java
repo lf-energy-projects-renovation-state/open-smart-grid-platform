@@ -212,9 +212,10 @@ public class CosemObjectAccessor {
         + this.getChannel()
         + ", call "
         + this.cosemObject.getTag()
+        + " "
         + methodClass.getMethodName()
-        + ": "
-        + JdlmsObjectToStringUtil.describeMethod(parameter);
+        + " with parameter "
+        + parameter;
   }
 
   public int getVersion() {

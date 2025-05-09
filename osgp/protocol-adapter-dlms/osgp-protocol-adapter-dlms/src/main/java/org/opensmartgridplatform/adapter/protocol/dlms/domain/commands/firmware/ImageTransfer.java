@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -154,8 +153,6 @@ public class ImageTransfer {
     params.add(DataObject.newUInteger32Data(this.getImageSize()));
     final DataObject parameter = DataObject.newStructureData(params);
 
-    this.setDescriptionForMethodCall(ImageTransferMethod.IMAGE_TRANSFER_INITIATE, parameter);
-
     final MethodResultCode resultCode =
         this.imageTransferCosem.callMethod(
             this.getClass().getSimpleName(),
@@ -204,7 +201,6 @@ public class ImageTransfer {
    */
   public void verifyImage() throws OsgpException {
     final DataObject parameter = DataObject.newInteger8Data((byte) 0);
-    this.setDescriptionForMethodCall(ImageTransferMethod.IMAGE_VERIFY, parameter);
 
     final MethodResultCode verified =
         this.imageTransferCosem.callMethod(
@@ -314,7 +310,6 @@ public class ImageTransfer {
   /** The image is activated. */
   public void activateImage() throws OsgpException {
     final DataObject parameter = DataObject.newInteger8Data((byte) 0);
-    this.setDescriptionForMethodCall(ImageTransferMethod.IMAGE_ACTIVATE, parameter);
 
     final MethodResultCode imageActivate =
         this.imageTransferCosem.callMethod(
@@ -478,8 +473,6 @@ public class ImageTransfer {
     params.add(DataObject.newOctetStringData(transferData));
     final DataObject parameter = DataObject.newStructureData(params);
 
-    this.setDescriptionForMethodCall(ImageTransferMethod.IMAGE_BLOCK_TRANSFER, parameter);
-
     final MethodResultCode resultCode =
         this.imageTransferCosem.callMethod(
             this.getClass().getSimpleName(), ImageTransferMethod.IMAGE_BLOCK_TRANSFER, parameter);
@@ -487,20 +480,6 @@ public class ImageTransfer {
     if (resultCode != MethodResultCode.SUCCESS) {
       log.info("Method IMAGE_BLOCK_TRANSFER gave result {} for block {}", resultCode, blockNumber);
     }
-  }
-
-  private void setDescriptionForMethodCall(
-      final ImageTransferMethod method, final DataObject parameter) {
-    this.connector
-        .getDlmsMessageListener()
-        .setDescription(
-            "ImageTransfer call "
-                + method.name().toLowerCase(Locale.UK)
-                + " with parameter "
-                + parameter
-                + ", call method: "
-                + JdlmsObjectToStringUtil.describeMethod(
-                    this.imageTransferCosem.createMethodParameter(method, parameter)));
   }
 
   private void logUploadPercentage(final int block, final int totalBlocks) {
