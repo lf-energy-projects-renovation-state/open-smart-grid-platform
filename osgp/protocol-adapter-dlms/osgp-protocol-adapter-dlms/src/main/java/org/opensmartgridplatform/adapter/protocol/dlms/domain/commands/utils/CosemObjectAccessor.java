@@ -212,6 +212,7 @@ public class CosemObjectAccessor {
         + this.getChannel()
         + ", call "
         + this.cosemObject.getTag()
+        + " "
         + methodClass.getMethodName()
         + " with parameter "
         + parameter;
