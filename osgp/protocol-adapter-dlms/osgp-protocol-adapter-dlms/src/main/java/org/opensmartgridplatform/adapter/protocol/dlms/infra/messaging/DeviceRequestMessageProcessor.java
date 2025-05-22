@@ -89,7 +89,7 @@ public abstract class DeviceRequestMessageProcessor extends DlmsConnectionMessag
 
     final MessageMetadata messageMetadata = MessageMetadata.fromMessage(message);
 
-    log.info(
+    log.debug(
         "messageMetadata for type {}. CorrelationUid: {} JMSCorrelationID: {}",
         messageMetadata.getMessageType(),
         messageMetadata.getCorrelationUid(),
@@ -97,16 +97,15 @@ public abstract class DeviceRequestMessageProcessor extends DlmsConnectionMessag
 
     final Serializable messageObject = message.getObject();
 
-    log.info("messageObject from message: {}", messageObject);
     try {
       final DlmsDevice device;
-      log.info("requiresExistingDevice: {}", this.requiresExistingDevice());
+      log.debug("requiresExistingDevice: {}", this.requiresExistingDevice());
       if (this.requiresExistingDevice()) {
         device = this.domainHelperService.findDlmsDevice(messageMetadata);
       } else {
         device = null;
       }
-      log.info("usesDeviceConnection: {}", this.usesDeviceConnection(messageObject));
+      log.debug("usesDeviceConnection: {}", this.usesDeviceConnection(messageObject));
       if (this.usesDeviceConnection(messageObject)) {
         /*
          * Set up a consumer to be called back with a DlmsConnectionManager for which the connection
