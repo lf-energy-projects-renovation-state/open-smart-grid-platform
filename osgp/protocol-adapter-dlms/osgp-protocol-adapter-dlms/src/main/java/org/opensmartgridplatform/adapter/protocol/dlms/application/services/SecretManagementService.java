@@ -19,6 +19,7 @@ import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.StoreNewKeyExc
 import org.opensmartgridplatform.shared.infra.jms.MessageMetadata;
 import org.opensmartgridplatform.shared.security.RsaEncrypter;
 import org.opensmartgridplatform.ws.schema.core.secret.management.ActivateSecretsRequest;
+import org.opensmartgridplatform.ws.schema.core.secret.management.ActivateSecretsResponse;
 import org.opensmartgridplatform.ws.schema.core.secret.management.GenerateAndStoreSecretsRequest;
 import org.opensmartgridplatform.ws.schema.core.secret.management.GenerateAndStoreSecretsResponse;
 import org.opensmartgridplatform.ws.schema.core.secret.management.GetNewSecretsRequest;
@@ -273,10 +274,12 @@ public class SecretManagementService {
     if (response == null) {
       throw new IllegalStateException("Could not store keys: NULL response");
     } else if (!OsgpResultType.OK.equals(response.getResult())) {
-      throw new IllegalStateException(
+      final String error =
           String.format(
               "Could not store keys: result=%s; fault=%s",
-              response.getResult(), response.getTechnicalFault()));
+              response.getResult(), response.getTechnicalFault());
+      LOGGER.info(error);
+      throw new IllegalStateException(error);
     }
   }
 
@@ -324,7 +327,16 @@ public class SecretManagementService {
     request.setSecretTypes(new SecretTypes());
     final List<SecretType> secretTypeList = request.getSecretTypes().getSecretType();
     keyTypes.forEach(kt -> secretTypeList.add(kt.toSecretType()));
-    this.secretManagementClient.activateSecretsRequest(messageMetadata, request);
+    final ActivateSecretsResponse response =
+        this.secretManagementClient.activateSecretsRequest(messageMetadata, request);
+    if (response.getResult() != OsgpResultType.OK) {
+      final String error =
+          String.format(
+              "Could not activate keys: result=%s; fault=%s",
+              response.getResult(), response.getTechnicalFault());
+      LOGGER.info(error);
+      throw new IllegalStateException(error);
+    }
   }
 
   public boolean hasNewSecret(
