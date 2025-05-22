@@ -28,6 +28,7 @@ import org.opensmartgridplatform.adapter.protocol.dlms.exceptions.StoreNewKeyExc
 import org.opensmartgridplatform.shared.infra.jms.MessageMetadata;
 import org.opensmartgridplatform.shared.security.RsaEncrypter;
 import org.opensmartgridplatform.ws.schema.core.secret.management.ActivateSecretsRequest;
+import org.opensmartgridplatform.ws.schema.core.secret.management.ActivateSecretsResponse;
 import org.opensmartgridplatform.ws.schema.core.secret.management.GenerateAndStoreSecretsResponse;
 import org.opensmartgridplatform.ws.schema.core.secret.management.GetSecretsRequest;
 import org.opensmartgridplatform.ws.schema.core.secret.management.GetSecretsResponse;
@@ -129,6 +130,10 @@ class SecretManagementServiceTest {
     final List<SecurityKeyType> keyTypes = List.of(KEY_TYPE);
     final ArgumentCaptor<ActivateSecretsRequest> activateSecretsCaptor =
         ArgumentCaptor.forClass(ActivateSecretsRequest.class);
+    final ActivateSecretsResponse response = new ActivateSecretsResponse();
+    response.setResult(OsgpResultType.OK);
+    when(this.secretManagementClient.activateSecretsRequest(same(messageMetadata), any()))
+        .thenReturn(response);
     // EXECUTE
     this.secretManagementTestService.activateNewKeys(
         messageMetadata, DEVICE_IDENTIFICATION, keyTypes);
@@ -139,6 +144,20 @@ class SecretManagementServiceTest {
     assertThat(capturedArgument.getDeviceId()).isEqualTo(DEVICE_IDENTIFICATION);
     assertThat(capturedArgument.getSecretTypes().getSecretType().get(0))
         .isEqualTo(KEY_TYPE.toSecretType());
+  }
+
+  @Test
+  void testActivateKeysThrowsException() {
+    final List<SecurityKeyType> keyTypes = List.of(KEY_TYPE);
+    when(this.secretManagementClient.activateSecretsRequest(same(messageMetadata), any()))
+        .thenThrow(new IllegalStateException("Simulated exception"));
+
+    assertThatThrownBy(
+            () -> {
+              this.secretManagementTestService.activateNewKeys(
+                  messageMetadata, DEVICE_IDENTIFICATION, keyTypes);
+            })
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
