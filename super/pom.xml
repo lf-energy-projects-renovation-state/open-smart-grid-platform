@@ -68,8 +68,8 @@ SPDX-License-Identifier: Apache-2.0
     <jakarta.validation.api.version>3.0.2</jakarta.validation.api.version>
     <jakarta.jms.api.version>3.1.0</jakarta.jms.api.version>
     <artemis.jakarta.client.version>2.33.0</artemis.jakarta.client.version>
-    <junit.version>5.11.4</junit.version>
-    <junit.platform.launcher.version>1.11.4</junit.platform.launcher.version>
+    <junit.version>5.11.0</junit.version>
+    <junit.platform.launcher.version>1.11.0</junit.platform.launcher.version>
     <byte.buddy.version>1.17.2</byte.buddy.version>
     <joda.version>2.12.7</joda.version>
     <flyway.version>9.22.3</flyway.version>
@@ -90,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
     <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
     <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
     <maven.dependency.plugin.version>3.7.1</maven.dependency.plugin.version>
-    <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
     <maven.failsafe.plugin.version>3.3.0</maven.failsafe.plugin.version>
     <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
@@ -1008,12 +1008,6 @@ SPDX-License-Identifier: Apache-2.0
         <groupId>org.junit.platform</groupId>
         <artifactId>junit-platform-launcher</artifactId>
         <version>${junit.platform.launcher.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-reporting</artifactId>
-        <version>${junit.platform.launcher.version}</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
