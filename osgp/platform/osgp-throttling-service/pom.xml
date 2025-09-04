@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
   </parent>
 
   <properties>
-    <spring.boot.version>3.4.9</spring.boot.version>
+    <spring.boot.version>3.5.5</spring.boot.version>
     <failOnMissingWebXml>false</failOnMissingWebXml>
   </properties>
 
@@ -175,21 +175,6 @@ SPDX-License-Identifier: Apache-2.0
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-commons</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
