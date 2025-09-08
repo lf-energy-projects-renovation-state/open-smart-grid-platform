@@ -6,19 +6,40 @@ package org.opensmartgridplatform.cucumber.platform.common.glue.steps.database.w
 
 import org.opensmartgridplatform.adapter.ws.domain.entities.ApplicationDataLookupKey;
 import org.opensmartgridplatform.adapter.ws.domain.entities.NotificationWebServiceConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NotificationWebServiceConfigurationBuilder {
+
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(NotificationWebServiceConfigurationBuilder.class);
 
   private String organisationIdentification = "test-org";
   private String applicationName = "application-name";
   private String marshallerContextPath = "org.opensmartgridplatform.adapter.ws.schema";
-  private String targetUri = "http://localhost:8188/notifications";
+
+  @Qualifier("wsCoreNotificationTargetUri")
+  private String targetUri;
+
   private String keyStoreType = "pkcs12";
-  private String keyStoreLocation = "/etc/ssl/certs/OSGP.pfx";
-  private String keyStorePassword = "1234";
+
+  @Qualifier("wsCoreNotificationKeystoreLocation")
+  private String keyStoreLocation;
+
+  @Qualifier("wsCoreNotificationKeystorePassword")
+  private String keyStorePassword;
+
   private String trustStoreType = "jks";
-  private String trustStoreLocation = "/etc/ssl/certs/trust.jks";
-  private String trustStorePassword = "123456";
+
+  @Qualifier("wsCoreNotificationTruststoreLocation")
+  private String trustStoreLocation;
+
+  @Qualifier("wsCoreNotificationTruststorePassword")
+  private String trustStorePassword;
+
   private int maxConnectionsPerRoute = 10;
   private int maxConnectionsTotal = 20;
   private int connectionTimeout = 10_000;
@@ -28,6 +49,17 @@ public class NotificationWebServiceConfigurationBuilder {
   private int circuitBreakerDurationMultiplier = 4;
 
   public NotificationWebServiceConfiguration build() {
+    LOGGER.info(
+        "\n\n\n\n\n\n\n\n\n\nBuilding notification web service configuration with targetUri: {}",
+        this.targetUri);
+    LOGGER.info(
+        "KeyStore: {}, {}, {}", this.keyStoreType, this.keyStoreLocation, this.keyStorePassword);
+    LOGGER.info(
+        "TrustStore: {}, {}, {}\n\n\n\n\n\n\n\n",
+        this.trustStoreType,
+        this.trustStoreLocation,
+        this.trustStorePassword);
+
     final NotificationWebServiceConfiguration config =
         new NotificationWebServiceConfiguration(
             new ApplicationDataLookupKey(this.organisationIdentification, this.applicationName),
