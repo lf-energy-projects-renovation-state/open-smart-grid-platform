@@ -6,16 +6,11 @@ package org.opensmartgridplatform.cucumber.platform.common.glue.steps.database.w
 
 import org.opensmartgridplatform.adapter.ws.domain.entities.ApplicationDataLookupKey;
 import org.opensmartgridplatform.adapter.ws.domain.entities.NotificationWebServiceConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NotificationWebServiceConfigurationBuilder {
-
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(NotificationWebServiceConfigurationBuilder.class);
 
   private String organisationIdentification = "test-org";
   private String applicationName = "application-name";
@@ -49,17 +44,6 @@ public class NotificationWebServiceConfigurationBuilder {
   private int circuitBreakerDurationMultiplier = 4;
 
   public NotificationWebServiceConfiguration build() {
-    LOGGER.info(
-        "\n\n\n\n\n\n\n\n\n\nBuilding notification web service configuration with targetUri: {}",
-        this.targetUri);
-    LOGGER.info(
-        "KeyStore: {}, {}, {}", this.keyStoreType, this.keyStoreLocation, this.keyStorePassword);
-    LOGGER.info(
-        "TrustStore: {}, {}, {}\n\n\n\n\n\n\n\n",
-        this.trustStoreType,
-        this.trustStoreLocation,
-        this.trustStorePassword);
-
     final NotificationWebServiceConfiguration config =
         new NotificationWebServiceConfiguration(
             new ApplicationDataLookupKey(this.organisationIdentification, this.applicationName),
