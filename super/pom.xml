@@ -68,8 +68,8 @@ SPDX-License-Identifier: Apache-2.0
     <jakarta.validation.api.version>3.0.2</jakarta.validation.api.version>
     <jakarta.jms.api.version>3.1.0</jakarta.jms.api.version>
     <artemis.jakarta.client.version>2.42.0</artemis.jakarta.client.version>
-    <junit.version>5.11.0</junit.version>
-    <junit.platform.launcher.version>1.11.0</junit.platform.launcher.version>
+    <junit.version>5.12.1</junit.version>
+    <junit.platform.launcher.version>1.12.1</junit.platform.launcher.version>
     <byte.buddy.version>1.17.2</byte.buddy.version>
     <joda.version>2.12.7</joda.version>
     <flyway.version>9.22.3</flyway.version>
