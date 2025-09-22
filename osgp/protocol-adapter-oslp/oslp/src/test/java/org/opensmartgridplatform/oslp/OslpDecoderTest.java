@@ -327,18 +327,18 @@ class OslpDecoderTest {
             "payloadMessage.eventNotificationRequest_.memoizedSerializedSize",
             "payloadMessage.eventNotificationRequest_.notifications_",
             "payloadMessage.registerDeviceRequest_.memoizedSerializedSize",
-            "payloadMessage.registerDeviceRequest_.deviceIdentification_"
-        )
+            "payloadMessage.registerDeviceRequest_.deviceIdentification_")
         .as(description)
         .isEqualTo(expected);
-        for(int i = 0; i < actual.getPayloadMessage().getEventNotificationRequest().getNotificationsCount(); i++) {
-          assertThat(actual.getPayloadMessage().getEventNotificationRequest().getNotifications(i))
-              .usingRecursiveComparison()
-              .ignoringFields(
-                  "memoizedSerializedSize", "description_", "timestamp_"
-              )
-              .isEqualTo(expected.getPayloadMessage().getEventNotificationRequest().getNotifications(i));
-        }
+    for (int i = 0;
+        i < actual.getPayloadMessage().getEventNotificationRequest().getNotificationsCount();
+        i++) {
+      assertThat(actual.getPayloadMessage().getEventNotificationRequest().getNotifications(i))
+          .usingRecursiveComparison()
+          .ignoringFields("memoizedSerializedSize", "description_", "timestamp_")
+          .isEqualTo(
+              expected.getPayloadMessage().getEventNotificationRequest().getNotifications(i));
+    }
   }
 
   enum ConnectionBehavior {
