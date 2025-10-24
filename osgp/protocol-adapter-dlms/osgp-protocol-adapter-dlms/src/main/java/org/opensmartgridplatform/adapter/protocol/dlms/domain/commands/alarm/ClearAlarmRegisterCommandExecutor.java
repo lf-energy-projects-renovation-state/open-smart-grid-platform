@@ -111,7 +111,7 @@ public class ClearAlarmRegisterCommandExecutor
       return Optional.of(result);
     } else {
       throw new ProtocolAdapterException(
-          "Error occurred for clear alarm register: ." + alarmType.name());
+          "Error occurred for clear alarm register: " + alarmType.name());
     }
   }
 
