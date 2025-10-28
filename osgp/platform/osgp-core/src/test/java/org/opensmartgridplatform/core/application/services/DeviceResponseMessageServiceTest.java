@@ -10,16 +10,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opensmartgridplatform.core.domain.model.domain.DomainResponseService;
+import org.opensmartgridplatform.domain.core.entities.Device;
 import org.opensmartgridplatform.domain.core.entities.ScheduledTask;
 import org.opensmartgridplatform.shared.exceptionhandling.ComponentType;
 import org.opensmartgridplatform.shared.exceptionhandling.OsgpException;
@@ -43,6 +47,7 @@ public class DeviceResponseMessageServiceTest {
           .withDomain(DOMAIN)
           .withDomainVersion(DOMAIN_VERSION)
           .withMessagePriority(4)
+          .withNetworkAddress("oldNetworkAddress")
           .build();
   private static final String DATA_OBJECT = "data object";
   private static final Timestamp SCHEDULED_TIME =
@@ -57,6 +62,7 @@ public class DeviceResponseMessageServiceTest {
   @Mock private DeviceCommunicationInformationService deviceCommunicationInformationService;
 
   @InjectMocks private DeviceResponseMessageService deviceResponseMessageService;
+  @Captor private ArgumentCaptor<ScheduledTask> scheduledTaskArgumentCaptor;
 
   /** test processMessage with a scheduled task that failed */
   @Test
@@ -166,5 +172,34 @@ public class DeviceResponseMessageServiceTest {
     // check if message is send and task is deleted
     verify(this.domainResponseMessageSender).send(message);
     verify(this.scheduledTaskService).deleteScheduledTask(scheduledTask);
+  }
+
+  @Test
+  public void testProcessMessageReschedule() {
+    final Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.DATE, 1);
+    final Date scheduledRetryTime = calendar.getTime();
+    final String newNetworkAddress = "newNetworkAddress";
+
+    final RetryHeader retryHeader = new RetryHeader(1, 2, scheduledRetryTime);
+    final Device device = new Device();
+    device.setNetworkAddress(newNetworkAddress);
+
+    final ProtocolResponseMessage message =
+        new ProtocolResponseMessage.Builder()
+            .messageMetadata(MESSAGE_METADATA.builder().withScheduled(false).build())
+            .result(ResponseMessageResultType.OK)
+            .dataObject(MESSAGE_METADATA)
+            .retryHeader(retryHeader)
+            .build();
+
+    when(this.deviceService.findByDeviceIdentification(message.getDeviceIdentification()))
+        .thenReturn(device);
+
+    this.deviceResponseMessageService.processMessage(message);
+
+    verify(this.scheduledTaskService).saveScheduledTask(this.scheduledTaskArgumentCaptor.capture());
+    final ScheduledTask savedTask = this.scheduledTaskArgumentCaptor.getValue();
+    final Serializable messageData = savedTask.getMessageData();
   }
 }
