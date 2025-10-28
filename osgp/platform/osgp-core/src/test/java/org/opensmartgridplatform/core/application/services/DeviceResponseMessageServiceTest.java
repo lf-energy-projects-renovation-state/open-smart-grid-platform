@@ -7,18 +7,16 @@ package org.opensmartgridplatform.core.application.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,7 +32,7 @@ import org.opensmartgridplatform.shared.infra.jms.RetryHeader;
 
 /** test class for DeviceResponseMessageService */
 @ExtendWith(MockitoExtension.class)
-public class DeviceResponseMessageServiceTest {
+class DeviceResponseMessageServiceTest {
 
   private static final String DOMAIN = "Domain";
   private static final String DOMAIN_VERSION = "1.0";
@@ -59,14 +57,11 @@ public class DeviceResponseMessageServiceTest {
 
   @Mock private ScheduledTaskService scheduledTaskService;
 
-  @Mock private DeviceCommunicationInformationService deviceCommunicationInformationService;
-
   @InjectMocks private DeviceResponseMessageService deviceResponseMessageService;
-  @Captor private ArgumentCaptor<ScheduledTask> scheduledTaskArgumentCaptor;
 
   /** test processMessage with a scheduled task that failed */
   @Test
-  public void testProcessScheduledMessageFailed() {
+  void testProcessScheduledMessageFailed() {
     final ResponseMessageResultType result = ResponseMessageResultType.NOT_OK;
     final Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, 1);
@@ -95,7 +90,7 @@ public class DeviceResponseMessageServiceTest {
 
   /** test processMessage with a scheduled task that must be retried */
   @Test
-  public void testProcessScheduledMessageRetry() {
+  void testProcessScheduledMessageRetry() {
     final String exceptionMessage = "message";
     this.testProcessScheduledMessageRetry(exceptionMessage, exceptionMessage);
   }
@@ -147,7 +142,7 @@ public class DeviceResponseMessageServiceTest {
    * than 255 characters
    */
   @Test
-  public void testProcessScheduledMessageRetryWithTruncatedError() {
+  void testProcessScheduledMessageRetryWithTruncatedError() {
     final String exceptionMessageWith255Characters = StringUtils.repeat('x', 255);
     final String tooLongExceptionMessage = exceptionMessageWith255Characters + "extra";
     this.testProcessScheduledMessageRetry(
@@ -156,7 +151,7 @@ public class DeviceResponseMessageServiceTest {
 
   /** test processMessage with a scheduled task that has been successful */
   @Test
-  public void testProcessScheduledMessageSuccess() {
+  void testProcessScheduledMessageSuccess() {
     final ProtocolResponseMessage message =
         new ProtocolResponseMessage.Builder()
             .messageMetadata(MESSAGE_METADATA.builder().withScheduled(true).build())
@@ -175,7 +170,7 @@ public class DeviceResponseMessageServiceTest {
   }
 
   @Test
-  public void testProcessMessageReschedule() {
+  void testProcessMessageRescheduleDeviceIsRefreshed() {
     final Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, 1);
     final Date scheduledRetryTime = calendar.getTime();
@@ -198,8 +193,7 @@ public class DeviceResponseMessageServiceTest {
 
     this.deviceResponseMessageService.processMessage(message);
 
-    verify(this.scheduledTaskService).saveScheduledTask(this.scheduledTaskArgumentCaptor.capture());
-    final ScheduledTask savedTask = this.scheduledTaskArgumentCaptor.getValue();
-    final Serializable messageData = savedTask.getMessageData();
+    verify(this.deviceService, times(1))
+        .findByDeviceIdentification(message.getDeviceIdentification());
   }
 }
