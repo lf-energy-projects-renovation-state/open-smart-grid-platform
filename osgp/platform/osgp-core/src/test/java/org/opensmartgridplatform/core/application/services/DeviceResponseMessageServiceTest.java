@@ -45,7 +45,6 @@ class DeviceResponseMessageServiceTest {
           .withDomain(DOMAIN)
           .withDomainVersion(DOMAIN_VERSION)
           .withMessagePriority(4)
-          .withNetworkAddress("oldNetworkAddress")
           .build();
   private static final String DATA_OBJECT = "data object";
   private static final Timestamp SCHEDULED_TIME =
@@ -56,6 +55,8 @@ class DeviceResponseMessageServiceTest {
   @Mock private DomainResponseService domainResponseMessageSender;
 
   @Mock private ScheduledTaskService scheduledTaskService;
+
+  @Mock private DeviceCommunicationInformationService deviceCommunicationInformationService;
 
   @InjectMocks private DeviceResponseMessageService deviceResponseMessageService;
 
