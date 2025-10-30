@@ -7,7 +7,6 @@ package org.opensmartgridplatform.core.application.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opensmartgridplatform.core.domain.model.domain.DomainResponseService;
-import org.opensmartgridplatform.domain.core.entities.Device;
 import org.opensmartgridplatform.domain.core.entities.ScheduledTask;
 import org.opensmartgridplatform.shared.exceptionhandling.ComponentType;
 import org.opensmartgridplatform.shared.exceptionhandling.OsgpException;
@@ -170,31 +168,4 @@ class DeviceResponseMessageServiceTest {
     verify(this.scheduledTaskService).deleteScheduledTask(scheduledTask);
   }
 
-  @Test
-  void testProcessMessageRescheduleDeviceIsRefreshed() {
-    final Calendar calendar = Calendar.getInstance();
-    calendar.add(Calendar.DATE, 1);
-    final Date scheduledRetryTime = calendar.getTime();
-    final String newNetworkAddress = "newNetworkAddress";
-
-    final RetryHeader retryHeader = new RetryHeader(1, 2, scheduledRetryTime);
-    final Device device = new Device();
-    device.setNetworkAddress(newNetworkAddress);
-
-    final ProtocolResponseMessage message =
-        new ProtocolResponseMessage.Builder()
-            .messageMetadata(MESSAGE_METADATA.builder().withScheduled(false).build())
-            .result(ResponseMessageResultType.OK)
-            .dataObject(MESSAGE_METADATA)
-            .retryHeader(retryHeader)
-            .build();
-
-    when(this.deviceService.findByDeviceIdentification(message.getDeviceIdentification()))
-        .thenReturn(device);
-
-    this.deviceResponseMessageService.processMessage(message);
-
-    verify(this.deviceService, times(1))
-        .findByDeviceIdentification(message.getDeviceIdentification());
-  }
 }

@@ -308,15 +308,11 @@ public class DeviceResponseMessageService {
     final Serializable messageData = message.getDataObject();
     final Timestamp scheduleTimeStamp = new Timestamp(scheduledRetryTime.getTime());
 
-    final Device device =
-        this.deviceService.findByDeviceIdentification(message.getDeviceIdentification());
-
-    final MessageMetadata updatedMessageMetadata =
-        message.messageMetadata().builder().withNetworkAddress(getNetworkAddress(device)).build();
+    final MessageMetadata messageMetadata = message.messageMetadata();
 
     final ScheduledTask task =
         new ScheduledTask(
-            updatedMessageMetadata,
+            messageMetadata,
             message.getDomain(),
             message.getDomainVersion(),
             messageData,
