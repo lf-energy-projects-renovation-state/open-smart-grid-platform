@@ -167,5 +167,4 @@ class DeviceResponseMessageServiceTest {
     verify(this.domainResponseMessageSender).send(message);
     verify(this.scheduledTaskService).deleteScheduledTask(scheduledTask);
   }
-
 }
