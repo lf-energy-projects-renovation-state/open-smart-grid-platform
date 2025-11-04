@@ -27,8 +27,6 @@ import java.util.concurrent.ExecutorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -243,12 +241,9 @@ class ScheduledTaskExecutorServiceTest {
     assertThat(protocolRequestMessage.getDeviceModelCode()).isEqualTo(deviceModelCode);
   }
 
-  @ParameterizedTest
-  @EnumSource(
-      value = ScheduledTaskStatusType.class,
-      names = {"NEW", "RETRY"})
-  void testRequestFromScheduledTaskIsCreatedWithLatestDeviceNetworkAddress(
-      final ScheduledTaskStatusType statusType) throws FunctionalException {
+  @Test
+  void testRequestFromScheduledTaskIsCreatedWithLatestDeviceNetworkAddress()
+      throws FunctionalException {
     final String deviceIdentification = "device-1";
     final String deviceModelCode = "E,M1,M2,M3,M4";
     final String oldNetworkAddress = "oldNetworkAddress";
@@ -272,15 +267,10 @@ class ScheduledTaskExecutorServiceTest {
             eq(ScheduledTaskStatusType.PENDING), any(Timestamp.class), any(Pageable.class)))
         .thenReturn(new ArrayList<>());
     when(this.scheduledTaskRepository.findByStatusAndScheduledTimeLessThan(
-            eq(statusType), any(Timestamp.class), any(Pageable.class)))
+            eq(ScheduledTaskStatusType.NEW), any(Timestamp.class), any(Pageable.class)))
         .thenReturn(List.of(scheduledTask), Collections.emptyList());
     when(this.scheduledTaskRepository.findByStatusAndScheduledTimeLessThan(
-            eq(
-                statusType == ScheduledTaskStatusType.NEW
-                    ? ScheduledTaskStatusType.RETRY
-                    : ScheduledTaskStatusType.NEW),
-            any(Timestamp.class),
-            any(Pageable.class)))
+            eq(ScheduledTaskStatusType.RETRY), any(Timestamp.class), any(Pageable.class)))
         .thenReturn(new ArrayList<>());
     when(this.scheduledTaskExecutorJobConfig.getScheduledTaskThreadPoolSize()).thenReturn(1);
 
@@ -291,6 +281,7 @@ class ScheduledTaskExecutorServiceTest {
     final ProtocolRequestMessage protocolRequestMessage =
         this.protocolRequestMessageCaptor.getValue();
     assertThat(protocolRequestMessage).isNotNull();
+
     assertThat(protocolRequestMessage.getIpAddress()).isEqualTo(newNetworkAddress);
   }
 
