@@ -20,7 +20,7 @@ public class ResponseDeserializationTest {
    * src/test/resources/} directory.
    */
   @Test
-  void testDeserializationDeviceStatusTest() {
+  void testDeserializationDeviceStatus() {
     DeviceStatusDto dto;
     try (InputStream inputStream = getClass().getResourceAsStream("/device-status-response.ser");
         ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
