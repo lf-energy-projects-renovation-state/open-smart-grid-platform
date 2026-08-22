@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
     <jaxb2.maven.plugin.version>3.1.0</jaxb2.maven.plugin.version>
     <jaxb.api.version>4.0.1</jaxb.api.version>
     <jaxb.core.version>4.0.4</jaxb.core.version>
-    <spotbugs.maven.plugin.version>4.6.0.0</spotbugs.maven.plugin.version>
+    <spotbugs.maven.plugin.version>4.10.4.0</spotbugs.maven.plugin.version>
     <pmd.maven.plugin.version>3.27.0</pmd.maven.plugin.version>
     <checkstyle.maven.plugin.version>3.6.0</checkstyle.maven.plugin.version>
     <dependency-check.maven.plugin.version>12.1.6</dependency-check.maven.plugin.version>
