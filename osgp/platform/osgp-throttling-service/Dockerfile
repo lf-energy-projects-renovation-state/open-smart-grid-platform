@@ -1,4 +1,4 @@
-FROM tomcat:10.1-jre17-temurin-noble
+FROM tomcat:11.0-jre17-temurin-noble
 
 RUN rm -rf /usr/local/tomcat/webapps.dist
 
