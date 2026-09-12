@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17
+FROM eclipse-temurin:25
 WORKDIR /
 COPY target/cucumber-*-test-jar-with-dependencies.jar /
 COPY src/test/resources/logback.xml /logback.xml
